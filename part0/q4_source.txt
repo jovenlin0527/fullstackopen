@@ -1,0 +1,41 @@
+actor user
+participant browser
+
+
+note over browser:
+Page loading complete
+end note
+
+user -> browser: write the note and click submit
+browser -> server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note\nnote=(/*whatever the user wrote*/)
+server --> browser: HTTP 302 /exampleapp/notes
+browser -> server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/notes
+server --> browser: HTTP 200 [HTML code]
+
+note over browser:
+The browser reads the HTML code,
+and realizes it needs additional resources
+to render the page.
+end note
+
+browser -> server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.css
+server --> browser: HTTP 200 [main.css]
+browser -> server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.js
+server --> browser: HTTP 200 [main.js]
+
+note over browser:
+The browser runs main.js, registers a callback on
+an XMLHTTPrequest object, and sends the request.
+end note
+
+browser -> server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/data.js
+server --> browser: HTTP 200 '[{content: "HTML is easy", date:...}, ....]'
+
+note over browser:
+When the browser finishes recieving the HTTP 200 response,
+it runs the registered callback, which modifies the DOM to display the response.
+end note
+
+note over user:
+The user can read the notes now.
+end note
