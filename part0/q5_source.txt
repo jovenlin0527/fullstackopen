@@ -1,0 +1,37 @@
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/spa
+server-->browser: HTTP 200 [HTML code]
+
+note over browser
+The browser reads the HTML code,
+and realizes it needs additonal resources
+to render the page.
+end note
+
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/main.css
+server-->browser: HTTP 200 [main.css]
+browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/spa.js
+server-->browser: HTTP 200 [spa.js]
+
+note over browser:
+The browser runs spa.js, registers a callback on
+an XMLHTTPrequest object, and sends the request.
+end note
+
+browser -> server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/data.js
+
+note over browser:
+The browser doesn't wait for the response,
+and proceeds to register a callback on 'window' element,
+so that when the window is loaded,
+another callback is registered on the form,
+which runs when the user submits the form.
+end note
+
+server --> browser: HTTP 200 '[{content: "HTML is easy", date:...}, ....]'
+
+note over browser:
+When the browser finishes recieving the HTTP 200 response,
+it runs the registered callback,
+which saves the HTTP response to a list named 'notes',
+and modifies the DOM to show this list.
+end note
