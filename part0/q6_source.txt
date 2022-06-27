@@ -1,0 +1,28 @@
+actor user
+participant browser
+participant server
+
+note over browser
+    In q5, the browser already rendered the page,
+    and registered a callback on the form,
+    which fires when the user submits the form.
+end note
+
+user -> browser: fills the form and clicks submit
+
+note over browser
+The callback on the form reads the form,
+creates an object which contains the form and current time.
+It appends the object to the existing list named 'notes',
+modifies the DOM so it shows the new list.
+It then creates an XMLHTTPRequst that contains this object,
+registers a callback, and sends the request.
+end note
+
+browser -> server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa \n {"content": ..., "date": ...}
+server --> browser: HTTP 201 {"message":"note created"}
+
+note over browser
+The callback runs when the the response is received,
+and logs the response.
+end note
