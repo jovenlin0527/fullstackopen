@@ -1,5 +1,19 @@
 import { useState } from 'react'
 
+const Button = ({onClick, text}) => (
+  <button onClick={onClick}>
+    {text}
+  </button>
+)
+
+const Anecdote = ({title, text, vote}) => (
+  <div>
+    <h2>{title} </h2>
+    <p>{text}</p>
+    <p>has {vote} votes</p>
+  </div>
+)
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -11,11 +25,35 @@ const App = () => {
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.'
   ]
    
-  const [selected, setSelected] = useState(0)
+  const randomId = () => Math.floor(Math.random() * anecdotes.length);
+  const [selected, setSelected] = useState(randomId());
+  const [statistics, setStatistics] = useState(anecdotes.map(() => 0));
+
+
+  const voteSelected = () => {
+    let copy = [...statistics];
+    copy[selected] += 1;
+    setStatistics(copy);
+  }
+
+  const mostVoted = (() => {
+    let maxId = 0;
+    let maxVote = 0;
+    for (let [id, vote] of statistics.entries()) {
+      if (vote > maxVote) {
+        maxId = id;
+        maxVote = vote;
+      }
+    }
+    return maxId;
+  })();
 
   return (
     <div>
-      {anecdotes[selected]}
+      <Anecdote title="Anecdote of the day" text={anecdotes[selected]} vote={statistics[selected]} />
+      <Button onClick={voteSelected} text="vote" />
+      <Button onClick={() => setSelected(randomId())} text="next anecdotes"/>
+      <Anecdote title="Anecdote with most voteSelected" text={anecdotes[mostVoted]} vote={statistics[mostVoted]} />
     </div>
   )
 }
