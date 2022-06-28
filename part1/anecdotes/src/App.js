@@ -36,17 +36,13 @@ const App = () => {
     setStatistics(copy);
   }
 
-  const mostVoted = (() => {
-    let maxId = 0;
-    let maxVote = 0;
-    for (let [id, vote] of statistics.entries()) {
-      if (vote > maxVote) {
-        maxId = id;
-        maxVote = vote;
-      }
+  const mostVoted = statistics.reduce(([maxId, maxVote], vote, id) => {
+    if (vote > maxVote) {
+      return [id, vote];
+    } else {
+      return [maxId, maxVote]
     }
-    return maxId;
-  })();
+  }, [0, 0])[0];
 
   return (
     <div>
