@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import phonebook from './services/phonebook'
+import {useNotification, NotificationCenter} from './components/Notification'
 
 const TextField = ({id, prompt, value, setValue}) => {
   const updateState = (event) => {
@@ -59,11 +60,16 @@ const PersonForm = ({onSubmit}) => {
 
 const App = () => {
   const [persons, setPersons] = useState([]);
+  const [notifications, pushNotfication] = useNotification();
+
   useEffect(() => {
     phonebook.getPersons().then(data => setPersons(data));
   }, [])
 
   const [nameFilter, setNameFilter] = useState('');
+
+  const pushNotice = (msg) => pushNotfication({msg, isError: false});
+  const pushError = (msg) => pushNotfication({msg, isError: true});
 
   const addPerson = (newPerson) => {
     const newName = newPerson.name;
@@ -99,6 +105,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <NotificationCenter notifications={notifications}/>
       <TextField id="filter" prompt="filter shown: " value={nameFilter} setValue={setNameFilter}/>
       <h3>Add phone number</h3>
       <PersonForm onSubmit={addPerson} />
