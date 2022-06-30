@@ -80,12 +80,20 @@ const App = () => {
           .then((newPerson) => {
             const newPersons = persons.map(p => p.name === newName ? newPerson : p);
             setPersons(newPersons);
-          })
+            pushNotice(`Updated ${newName}`);
+          }).catch((error) => {
+            if (error?.response?.status === 404) {
+              pushError(`Information of ${newName} has already been removed from server`)
+            } else {
+              throw error;
+            }
+          });
       }
     } else {
       phonebook.addPerson(newPerson)
         .then(person => {
-          setPersons(persons.concat(person))
+          setPersons(persons.concat(person));
+          pushNotice(`Added ${newName}`);
         })
     }
   };
@@ -96,6 +104,13 @@ const App = () => {
         .then(() => {
           const newPersons = persons.filter(x => x.id !== p.id );
           setPersons(newPersons);
+          pushNotice(`Deleted ${p.name}`);
+        }).catch((error) => {
+          if (error?.response?.status === 404) {
+            pushError(`Information of ${p.name} has already been removed from server`)
+          } else {
+            throw error;
+          }
         });
     }
   }
