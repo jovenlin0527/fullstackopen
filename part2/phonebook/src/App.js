@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import phonebook from './services/phonebook'
 
 const TextField = ({id, prompt, value, setValue}) => {
   const updateState = (event) => {
@@ -13,11 +13,12 @@ const TextField = ({id, prompt, value, setValue}) => {
   )
 }
 
-const Persons = ({persons}) => {
+const Persons = ({persons, deleteId: deletePerson}) => {
   const rows = persons.map(p => (
-    <tr key={p.name}>
+    <tr key={p.id}>
       <td> {p.name} </td>
       <td> {p.number} </td>
+      <td> <button onClick={() => deletePerson(p)}>delete</button></td>
     </tr>
   ))
   return (
@@ -59,23 +60,39 @@ const PersonForm = ({onSubmit}) => {
 const App = () => {
   const [persons, setPersons] = useState([]);
   useEffect(() => {
-    axios.get("http://localhost:3001/persons")
-      .then(response => {
-        setPersons(response.data);
-      })
+    phonebook.getPersons().then(data => setPersons(data));
   }, [])
 
   const [nameFilter, setNameFilter] = useState('');
 
   const addPerson = (newPerson) => {
     const newName = newPerson.name;
-    const alreadyExists = persons.some(x => x.name === newName);
-    if (alreadyExists) {
-      alert(`${newName} is already added to phonebook`)
+    const oldPerson = persons.find(x => x.name === newName);
+    if (oldPerson) {
+      if (window.confirm(`${newName} already exists in the phonebook. Replace the old number with the new number?`)) {
+        phonebook.updatePersonById(oldPerson.id, newPerson)
+          .then((newPerson) => {
+            const newPersons = persons.map(p => p.name === newName ? newPerson : p);
+            setPersons(newPersons);
+          })
+      }
     } else {
-      setPersons(persons.concat(newPerson));
+      phonebook.addPerson(newPerson)
+        .then(person => {
+          setPersons(persons.concat(person))
+        })
     }
   };
+
+  const deletePerson = (p) => {
+    if (window.confirm(`delete ${p.name} ?`)) {
+      phonebook.deletePersonById(p.id)
+        .then(() => {
+          const newPersons = persons.filter(x => x.id !== p.id );
+          setPersons(newPersons);
+        });
+    }
+  }
 
   const personsToShow = nameFilter ? persons.filter(x => x.name.toLowerCase().includes(nameFilter.toLowerCase())) : persons;
 
@@ -86,7 +103,7 @@ const App = () => {
       <h3>Add phone number</h3>
       <PersonForm onSubmit={addPerson} />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} deleteId={deletePerson}/>
     </div>
   )
 }
