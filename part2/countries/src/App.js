@@ -15,7 +15,7 @@ const DisplayWeather = ({weather}) => {
   return (
     <div>
       <h3> Weather in {weather.name} </h3>
-      <img src={iconurl} />
+      <img src={iconurl} alt="" />
       <p> {main}: {description} </p>
       <p> temprature: {temperature} Celcius </p>
       <p> wind speed: {weather.wind.speed} m/s </p>
@@ -36,13 +36,12 @@ const DisplayCountry = ({country}) => {
           setWeather(data);
         });
     }
-  }, [country && country.name.common])
-  const validCountry = country ?? false;
-  if (!validCountry) {
+  }, [country])
+  if (country == null) {
     return <></>
   }
   const languages = Object.entries(country.languages).map(([k, s]) => <li key={k}> {s} </li>)
-  const weatherInfo = (weather ?? weather.name == country.capital) ? <DisplayWeather weather={weather} />: null;
+  const weatherInfo = (country.capital.includes(weather?.name)) ? <DisplayWeather weather={weather} />: null;
   return (
     <article>
       <h2> {country.name.common} </h2>
@@ -94,7 +93,7 @@ const App = () => {
     const filtered = countries.filter(c => countryNameIncludes(c, newFilter));
     setFiltered(filtered);
     setCountryFilter(newFilter);
-    if (filtered.length == 1){
+    if (filtered.length === 1){
       setDisplayed(filtered[0])
     } else {
       setDisplayed(null);
