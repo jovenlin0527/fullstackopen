@@ -27,16 +27,13 @@ const DisplayWeather = ({weather}) => {
 const DisplayCountry = ({country}) => {
   const [weather, setWeather] = useState(null);
   useEffect(() => {
-    if(country != null){
-      console.log('fired: ', country.name.common);
+    if(country?.capital){
       getWeather(`${country.capital}`)
         .then(data => {
-          console.log(`weather get: ${country.name.common}`)
-          console.log(data);
           setWeather(data);
         });
     }
-  }, [country])
+  }, [country?.capital])
   if (country == null) {
     return <></>
   }
@@ -82,7 +79,6 @@ const App = () => {
   const [displayed, setDisplayed] = useState(null);
   useEffect(() => {
     axios.get('https://restcountries.com/v3.1/all').then(response => {
-      console.log("Countries: ", response.data);
       setCountries(response.data);
     })
 
