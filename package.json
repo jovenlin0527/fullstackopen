@@ -4,7 +4,8 @@
   "description": "exercise for fullstackopen part 4",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Not implemented\" && exit 1"
+    "test": "echo \"Not implemented\" && exit 1",
+    "lint": "eslint ."
   },
   "author": "b05902132",
   "license": "MIT",
@@ -15,6 +16,7 @@
     "mongoose": "^6.4.2"
   },
   "devDependencies": {
+    "eslint": "^8.19.0",
     "nodemon": "^2.0.18"
   }
 }
