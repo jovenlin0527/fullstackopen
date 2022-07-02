@@ -73,6 +73,24 @@ describe('total likes', () => {
     const result = listHelper.totalLikes(blogs)
     expect(result).toBe(36)
   })
-
-
 })
+
+describe('favorite blogs', () => {
+  const listWithOneBlog = blogs.slice(0, 1)
+  test('of empty list is null', () => {
+    expect(listHelper.favoriteBlog([])).toBeNull()
+  })
+
+  test('of singleton list it\'s the only item', () => {
+    expect(listHelper.favoriteBlog(listWithOneBlog)).toBe(listWithOneBlog[0])
+  })
+
+  test('of longer list it\'s the item with most likes', () => {
+    const result = listHelper.favoriteBlog(blogs)
+    expect(result).toEqual(expect.anything())
+    const blogsWithNoLessLikes = blogs.filter(b => b.likes >= result.likes)
+    expect(blogsWithNoLessLikes.every(b => b.likes === result.likes)).toBe(true)
+    expect(blogsWithNoLessLikes).toContain(result)
+  })
+})
+
