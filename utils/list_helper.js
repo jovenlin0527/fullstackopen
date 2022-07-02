@@ -23,4 +23,17 @@ const mostBlogs = (arr) => {
   return { author, blogs }
 }
 
-module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs }
+const mostLikes = (arr) => {
+  if (arr == null || arr.length == 0) {
+    return null
+  }
+  let [author, likes] = _.chain(arr)
+    .groupBy(o => o.author)
+    .toPairs()
+    .map(([author, blogs]) => [author, _.reduce(blogs, (x, y) => (x + y.likes), 0)])
+    .maxBy(([_, likes]) => likes)
+    .value();
+  return {author, likes}
+}
+
+module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes }

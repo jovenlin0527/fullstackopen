@@ -117,3 +117,29 @@ describe('author with most blogs', () => {
   })
 })
 
+
+describe('author with most likes', () => {
+  test('of empty list is null', () => {
+    expect(listHelper.mostLikes([])).toBeNull()
+  })
+
+  test('of singleton list is the only author', () => {
+    const result = listHelper.mostLikes(blogs.slice(0, 1))
+    const expected = {
+      author: blogs[0].author,
+      likes: blogs[0].likes
+    }
+    expect(result).toEqual(expected)
+  })
+
+  test('of longer list it\'s the author with most likes', () => {
+    const result = listHelper.mostLikes(blogs)
+    const expected = {
+      author: "Edsger W. Dijkstra",
+      likes: 17
+    };
+    expect(result).toEqual(expected)
+
+  })
+
+})
