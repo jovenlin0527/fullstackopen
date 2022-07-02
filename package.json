@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Not implemented\" && exit 1",
+    "dev": "nodemon index.js",
     "lint": "eslint ."
   },
   "author": "b05902132",
