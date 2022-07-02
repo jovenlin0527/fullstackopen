@@ -12,7 +12,15 @@ const Blog = require('./models/Blog')
 
 const logger = require('./utils/logger')
 
+logger.info('connecting to MongoDB')
+
 mongoose.connect(config.MONGODB_URI)
+  .then(() => {
+    logger.info('MongoDB connected')
+  })
+  .catch(error => {
+    logger.error('error connecting to MongoDB', error.message)
+  })
 
 app.use(cors())
 app.use(express.json())
