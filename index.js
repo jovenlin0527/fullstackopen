@@ -1,13 +1,14 @@
 'use strict'
 
 const config = require('./utils/config')
-const bloglistRouter = require('./controller/bloglist')
-const mongoose = require('mongoose')
 
 const express = require('express')
-const app = express()
+const mongoose = require('mongoose')
 const cors = require('cors')
 
+const app = express()
+
+const bloglistRouter = require('./controller/bloglist')
 const logger = require('./utils/logger')
 
 logger.info('connecting to MongoDB')
