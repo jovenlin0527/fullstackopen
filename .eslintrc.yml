@@ -18,7 +18,10 @@ rules:
   semi:
     - error
     - never
-  no-console: error
+  no-console:
+    - error
+    - allow:
+      - assert
   eqeqeq:
     - error
     - smart
