@@ -94,3 +94,26 @@ describe('favorite blogs', () => {
   })
 })
 
+describe('author with most blogs', () => {
+  test('of empty list is null', () => {
+    expect(listHelper.mostBlogs([])).toBeNull()
+  })
+  test('of singleton list is the only author', () => {
+    const result = listHelper.mostBlogs(blogs.slice(0, 1))
+    const expected = {
+      author: blogs[0].author,
+      blogs: 1
+    }
+    expect(result).toEqual(expected)
+  })
+  test('of longer list it\'s the author with most blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+    const expected = {
+      author: "Robert C. Martin",
+      blogs: 3
+    };
+    expect(result).toEqual(expected)
+
+  })
+})
+
