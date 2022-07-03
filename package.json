@@ -4,8 +4,9 @@
   "description": "exercise for fullstackopen part 4",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose",
-    "dev": "nodemon index.js",
+    "start": "NODE_ENV=production node index.js",
+    "test": "NODE_ENV=test jest --verbose --runInBand --forceExit",
+    "dev": "NODE_ENV=development nodemon index.js",
     "lint": "eslint ."
   },
   "author": "b05902132",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "eslint": "^8.19.0",
     "jest": "^28.1.2",
-    "nodemon": "^2.0.18"
+    "nodemon": "^2.0.18",
+    "supertest": "^6.2.4"
   }
 }
