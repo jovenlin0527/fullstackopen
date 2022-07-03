@@ -63,4 +63,16 @@ test('Posted blog is updated to the db', async () => {
   expect(extraBlog).toMatchObject(newBlog)
 })
 
+test('If new blog has no likes, it defaults to 0', async () => {
+  const newBlog = {
+    title: 'title',
+    author: 'author',
+    url: 'http://localhost/'
+  }
+  const response = await api.post('/api/blogs')
+    .send(newBlog)
+    .expect(201) // created succesffuly
+  expect(response.body.likes).toBe(0)
+})
+
 afterAll(() => mongoose.connection.close())
