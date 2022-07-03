@@ -41,4 +41,16 @@ const initialBlogs = [
 
 const currentBlogs = () => Blog.find({})
 
-module.exports = { initialBlogs , currentBlogs }
+const nonexistentId = async () => {
+  const newBlog = await Blog.create({
+    title: 'title',
+    author: 'author',
+    url: 'http://localhost/',
+    likes: 0
+  })
+  const id = newBlog.id
+  await Blog.findByIdAndDelete(id)
+  return id
+}
+
+module.exports = { initialBlogs , currentBlogs, nonexistentId }

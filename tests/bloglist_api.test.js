@@ -107,6 +107,12 @@ describe('Deleting a blog', () => {
     await api.delete(`/api/blogs/${id}`)
       .expect(204)
   })
+
+  test('404 if a nonexistent blog is deleted', async () => {
+    const id = await helper.nonexistentId()
+    await api.delete(`/api/blogs/${id}`)
+      .expect(404)
+  })
 })
 
 afterAll(() => mongoose.connection.close())
