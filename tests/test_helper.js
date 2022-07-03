@@ -39,4 +39,6 @@ const initialBlogs = [
   }
 ]
 
-module.exports = { initialBlogs }
+const currentBlogs = () => Blog.find({})
+
+module.exports = { initialBlogs , currentBlogs }

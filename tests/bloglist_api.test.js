@@ -29,4 +29,25 @@ test('Blogs have an id', async () => {
   blogs.forEach(b => expect(b._id).toBeUndefined())
 })
 
+test('Can post new blog', async () => {
+  const beforeBlogs = await helper.currentBlogs()
+  const newBlog = {
+    title: 'title',
+    author: 'author',
+    url: 'http://localhost/',
+    likes: 0
+  }
+  const response = await api.post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+  const receivedBlog = response.body
+  const newId = receivedBlog.id
+
+  const afterBlogs = await helper.currentBlogs()
+  expect(afterBlogs.length).toBe(beforeBlogs.length + 1)
+  const extraBlog = afterBlogs.find(o => o.id === newId)
+  expect(extraBlog).toMatchObject(newBlog)
+})
+
 afterAll(() => mongoose.connection.close())
