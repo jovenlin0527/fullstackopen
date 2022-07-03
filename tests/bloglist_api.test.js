@@ -22,4 +22,11 @@ test('All blogs are returend', async () => {
   expect(response.body).toHaveLength(helper.initialBlogs.length)
 })
 
+test('Blogs have an id', async () => {
+  const response = await api.get('/api/blogs')
+  const blogs = response.body
+  blogs.forEach(b => expect(b.id).toBeDefined())
+  blogs.forEach(b => expect(b._id).toBeUndefined())
+})
+
 afterAll(() => mongoose.connection.close())
