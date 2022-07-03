@@ -92,6 +92,15 @@ describe('Posting a new blog', () => {
 })
 
 describe('Deleting a blog', () => {
+  test('Blog is deleted from db', async () => {
+    const randomBlog = await Blog.findOne({})
+    const id = randomBlog.id
+    await api.delete(`/api/blogs/${id}`)
+
+    const deletedBlog = await Blog.findById(id)
+    expect(deletedBlog).toBeNull()
+  })
+
   test('HTTP response is 204', async() => {
     const randomBlog = await Blog.findOne({})
     const id = randomBlog.id
