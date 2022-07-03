@@ -115,4 +115,53 @@ describe('Deleting a blog', () => {
   })
 })
 
+describe('Updating a blog', () => {
+  describe('PATCH behaves correctly', () => {
+    test('returns a JSON object if successfull', async () => {
+      const targetBlog = await Blog.findOne({})
+      const id = targetBlog.id
+      await api.patch(`/api/blogs/${id}`)
+        .send({})
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+    })
+
+    test('returns the existing object if nothing is updated', async () => {
+      const targetBlog = await Blog.findOne({})
+      const id = targetBlog.id
+      const response = await api.patch(`/api/blogs/${id}`).send({})
+      expect(JSON.stringify(response.body)).toEqual(JSON.stringify(targetBlog))
+    })
+
+    test('updates the existing object in db', async () => {
+      const targetBlog = await Blog.findOne({})
+      const likes = targetBlog.likes
+      const newLikes = likes + 10
+      const id = targetBlog.id
+      await api.patch(`/api/blogs/${id}`)
+        .send({ likes: newLikes })
+      const updatedBlog = await Blog.findById(id)
+      expect(updatedBlog.likes).toBe(newLikes)
+    })
+
+    test('returns the updated object', async () => {
+      const targetBlog = await Blog.findOne({})
+      const likes = targetBlog.likes
+      const newLikes = likes + 10
+      const id = targetBlog.id
+      const returned = await api.patch(`/api/blogs/${id}`)
+        .send({ likes: newLikes })
+      const returnedBlog = returned.body
+      expect(returnedBlog.likes).toBe(newLikes)
+    })
+
+    test('returns 404 if the object is not found', async() => {
+      const id = await helper.nonexistentId()
+      await api.patch(`/api/blogs/${id}`)
+        .send({})
+        .expect(404)
+    })
+  })
+})
+
 afterAll(() => mongoose.connection.close())
