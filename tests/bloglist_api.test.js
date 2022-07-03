@@ -29,7 +29,24 @@ test('Blogs have an id', async () => {
   blogs.forEach(b => expect(b._id).toBeUndefined())
 })
 
-test('Can post new blog', async () => {
+
+test('Posted blog is returned correctly', async () => {
+  const newBlog = {
+    title: 'title',
+    author: 'author',
+    url: 'http://localhost/',
+    likes: 0
+  }
+
+  const response = await api.post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+  const receivedBlog = response.body
+  expect(receivedBlog).toMatchObject(newBlog)
+})
+
+test('Posted blog is updated to the db', async () => {
   const beforeBlogs = await helper.currentBlogs()
   const newBlog = {
     title: 'title',
@@ -37,12 +54,8 @@ test('Can post new blog', async () => {
     url: 'http://localhost/',
     likes: 0
   }
-  const response = await api.post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
-  const receivedBlog = response.body
-  const newId = receivedBlog.id
+  const response = await api.post('/api/blogs').send(newBlog)
+  const newId = response.body.id
 
   const afterBlogs = await helper.currentBlogs()
   expect(afterBlogs.length).toBe(beforeBlogs.length + 1)
