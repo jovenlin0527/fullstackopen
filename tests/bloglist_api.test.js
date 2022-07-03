@@ -91,4 +91,13 @@ describe('Posting a new blog', () => {
   })
 })
 
+describe('Deleting a blog', () => {
+  test('HTTP response is 204', async() => {
+    const randomBlog = await Blog.findOne({})
+    const id = randomBlog.id
+    await api.delete(`/api/blogs/${id}`)
+      .expect(204)
+  })
+})
+
 afterAll(() => mongoose.connection.close())
