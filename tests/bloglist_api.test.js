@@ -11,4 +11,15 @@ beforeEach(async () => {
   await Promise.all(helper.initialBlogs.map(x => Blog.create(x)))
 })
 
+test('Blogs are returned as json', async () => {
+  await api.get('/api/blogs')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+})
+
+test('All blogs are returend', async () => {
+  const response = await api.get('/api/blogs')
+  expect(response.body).toHaveLength(helper.initialBlogs.length)
+})
+
 afterAll(() => mongoose.connection.close())
