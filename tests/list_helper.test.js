@@ -109,9 +109,9 @@ describe('author with most blogs', () => {
   test('of longer list it\'s the author with most blogs', () => {
     const result = listHelper.mostBlogs(blogs)
     const expected = {
-      author: "Robert C. Martin",
+      author: 'Robert C. Martin',
       blogs: 3
-    };
+    }
     expect(result).toEqual(expected)
 
   })
@@ -135,9 +135,9 @@ describe('author with most likes', () => {
   test('of longer list it\'s the author with most likes', () => {
     const result = listHelper.mostLikes(blogs)
     const expected = {
-      author: "Edsger W. Dijkstra",
+      author: 'Edsger W. Dijkstra',
       likes: 17
-    };
+    }
     expect(result).toEqual(expected)
 
   })

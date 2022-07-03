@@ -12,7 +12,7 @@ const favoriteBlog = (blogs) =>
   blogs.length === 0 ? null : blogs.reduce((b1, b2) => b1.likes > b2.likes ? b1 : b2)
 
 const mostBlogs = (arr) => {
-  if (arr == null || arr.length == 0) {
+  if (arr == null || arr.length === 0) {
     return null
   }
   let [author, blogs] = _.chain(arr)
@@ -24,7 +24,7 @@ const mostBlogs = (arr) => {
 }
 
 const mostLikes = (arr) => {
-  if (arr == null || arr.length == 0) {
+  if (arr == null || arr.length === 0) {
     return null
   }
   let [author, likes] = _.chain(arr)
@@ -32,8 +32,8 @@ const mostLikes = (arr) => {
     .toPairs()
     .map(([author, blogs]) => [author, _.reduce(blogs, (x, y) => (x + y.likes), 0)])
     .maxBy(([_, likes]) => likes)
-    .value();
-  return {author, likes}
+    .value()
+  return { author, likes }
 }
 
 module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes }
