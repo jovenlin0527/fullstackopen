@@ -9,10 +9,6 @@ bloglistRouter.get('/', async (request, response) => {
 
 bloglistRouter.post('/', async (request, response) => {
   const blog = new Blog(request.body)
-  if (!blog.url && !blog.title) {
-    return response.status(400).end()
-  }
-  blog.likes = blog.likes ?? 0
   const savedBlog = await blog.save()
   response.status(201).json(savedBlog)
 })
@@ -39,9 +35,9 @@ bloglistRouter.patch('/:id', async(request, response) => {
 
 bloglistRouter.put('/:id', async(request, response) => {
   const id = request.params.id
-  const newBlog = request.body
-  newBlog.likes ??= 0
-  const doc = await Blog.findByIdAndUpdate(id, newBlog, { returnDocument: 'after' })
+  // Built-in replace and update method don't seem to support validation....
+  await Blog.validate(request.body)
+  const doc = await Blog.findByIdAndUpdate(id, request.body , { overwrite: true, returnDocument: 'after' })
   if (doc == null) {
     response.status(404).json({ error: 'blog not found' })
   } else {

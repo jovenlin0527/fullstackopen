@@ -167,6 +167,7 @@ describe('Updating a blog', () => {
     const newBlog = {
       title: 'newTitle',
       author: 'newAuthor',
+      url: 'localhost',
       likes: 8000
     }
 
@@ -199,7 +200,7 @@ describe('Updating a blog', () => {
     })
 
     test('accepts blogs without a like, defaulting to zero', async () => {
-      const newBlog = { title: 'newTitle', author: 'newAuthor' }
+      const newBlog = { title: 'newTitle', author: 'newAuthor', 'url': 'localhost' }
       const expectedBlog = { ...newBlog, likes: 0 }
       const randomBlog = await Blog.findOne({})
       const id = randomBlog.id
@@ -211,10 +212,23 @@ describe('Updating a blog', () => {
       expect(updatedBlog).toMatchObject(expectedBlog)
     })
 
+    test('Do not accept illegal blogs', async() => {
+      let badBlog = {}
+      const randomBlog = await Blog.findOne({})
+      let oldBlog = randomBlog.toObject()
+      const id = randomBlog.id
+      await api.put(`/api/blogs/${id}`)
+        .send(badBlog)
+        .expect(400)
+      let updatedBlog = await Blog.findById(id)
+      expect(updatedBlog.toObject()).toEqual(oldBlog)
+
+    })
+
     test('returns 404 if no object is found', async () => {
       const id = await helper.nonexistentId()
       await api.put(`/api/blogs/${id}`)
-        .send({})
+        .send(newBlog)
         .expect(404)
     })
   })
