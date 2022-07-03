@@ -6,9 +6,10 @@ const helper = require('./test_helper')
 
 const api = supertest(app)
 
+
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Promise.all(helper.initialBlogs.map(x => Blog.create(x)))
+  await Blog.create(helper.initialBlogs)
 })
 
 test('Blogs are returned as json', async () => {
