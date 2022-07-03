@@ -162,6 +162,62 @@ describe('Updating a blog', () => {
         .expect(404)
     })
   })
+
+  describe('PUT behaves correctly', () => {
+    const newBlog = {
+      title: 'newTitle',
+      author: 'newAuthor',
+      likes: 8000
+    }
+
+    test('returns a JSON object if successfull', async () => {
+      const randomBlog = await Blog.findOne({})
+      const id = randomBlog.id
+      await api.put(`/api/blogs/${id}`)
+        .send(newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+    })
+
+    test('updates the existing object in the db', async () => {
+      const randomBlog = await Blog.findOne({})
+      const id = randomBlog.id
+      await api.put(`/api/blogs/${id}`)
+        .send(newBlog)
+      const updatedBlog = await Blog.findById(id)
+      const updatedObj = JSON.parse(JSON.stringify(updatedBlog))
+      expect(updatedObj).toMatchObject(newBlog)
+    })
+
+    test('returns the updated object', async () => {
+      const randomBlog = await Blog.findOne({})
+      const id = randomBlog.id
+      const response = await api.put(`/api/blogs/${id}`)
+        .send(newBlog)
+      const updatedBlog = response.body
+      expect(updatedBlog).toMatchObject(newBlog)
+    })
+
+    test('accepts blogs without a like, defaulting to zero', async () => {
+      const newBlog = { title: 'newTitle', author: 'newAuthor' }
+      const expectedBlog = { ...newBlog, likes: 0 }
+      const randomBlog = await Blog.findOne({})
+      const id = randomBlog.id
+      const response = await api.put(`/api/blogs/${id}`)
+        .send(newBlog)
+        .expect(200) // should success
+      expect(response.body).toMatchObject(expectedBlog)
+      const updatedBlog = await Blog.findById(id)
+      expect(updatedBlog).toMatchObject(expectedBlog)
+    })
+
+    test('returns 404 if no object is found', async () => {
+      const id = await helper.nonexistentId()
+      await api.put(`/api/blogs/${id}`)
+        .send({})
+        .expect(404)
+    })
+  })
 })
 
 afterAll(() => mongoose.connection.close())

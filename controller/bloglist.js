@@ -37,4 +37,16 @@ bloglistRouter.patch('/:id', async(request, response) => {
   }
 })
 
+bloglistRouter.put('/:id', async(request, response) => {
+  const id = request.params.id
+  const newBlog = request.body
+  newBlog.likes ??= 0
+  const doc = await Blog.findByIdAndUpdate(id, newBlog, { returnDocument: 'after' })
+  if (doc == null) {
+    response.status(404).json({ error: 'blog not found' })
+  } else {
+    response.status(200).json(doc)
+  }
+})
+
 module.exports = bloglistRouter
