@@ -1,16 +1,15 @@
+const _ = require('lodash')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const User = require('../models/user')
-
+const helper = require('./test_helper')
 
 const api = supertest(app)
 
 const base_url = '/api/users'
 
-beforeEach(async () => {
-  await User.deleteMany({})
-})
+beforeEach(helper.initializeUsers)
 
 describe('Create users', () => {
   const newUser = {
@@ -47,6 +46,42 @@ describe('Create users', () => {
     expect(canLogin).toBe(true)
     canLogin = await createdUser.comparePassword('')
     expect(canLogin).toBe(false)
+  })
+})
+
+describe('List users', () => {
+  test('HTTP 200 response in json', async () => {
+    await api.get('/api/users')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+  })
+
+  test('returns every user, without their passowrds', async () => {
+    const response = await api.get('/api/users')
+    const users = response.body
+    expect(users.length).toBe(helper.initialUsers.length)
+    const userTable = _.chain(users)
+      .sortBy(o => o.name)
+      .map(user => {
+        user = { ...user }
+        delete user.id
+        return user
+      })
+      .value()
+    const initialTable = _.chain(helper.initialUsers)
+      .sortBy(o => o.name)
+      .map(user => {
+        user = { ...user }
+        delete user.password
+        return user
+      })
+      .value()
+    expect(userTable).toEqual(initialTable)
+  })
+
+  test('returned users have an id field', async () => {
+    const response = await api.get('/api/users')
+    expect(response.body[0].id).toBeDefined()
   })
 })
 
