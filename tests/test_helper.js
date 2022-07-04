@@ -39,6 +39,11 @@ const initialBlogs = [
   }
 ]
 
+const initializeBlogs = async () => {
+  await Blog.deleteMany({})
+  await Blog.create(initialBlogs)
+}
+
 const currentBlogs = () => Blog.find({})
 
 const nonexistentBlogId = async () => {
@@ -53,4 +58,4 @@ const nonexistentBlogId = async () => {
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentBlogId }
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs }

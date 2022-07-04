@@ -7,10 +7,7 @@ const helper = require('./test_helper')
 const api = supertest(app)
 
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
-  await Blog.create(helper.initialBlogs)
-})
+beforeEach(helper.initializeBlogs)
 
 describe('Get blog list', () => {
   test('Blogs are returned as json', async () => {
