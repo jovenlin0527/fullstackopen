@@ -50,12 +50,19 @@ const initialUsers = [
 
 const initializeBlogs = async () => {
   await Blog.deleteMany({})
-  await Blog.create(initialBlogs)
+  for (const b of initialBlogs) {
+    await Blog.create(b) // avoid race condition: multiple blogs may try to add itself to the same user.
+  }
 }
 
 const initializeUsers = async () => {
   await User.deleteMany({})
   await User.create(initialUsers)
+}
+
+const initializeDb = async () => {
+  await initializeUsers()
+  await initializeBlogs()
 }
 
 const currentBlogs = () => Blog.find({})
@@ -72,4 +79,4 @@ const nonexistentBlogId = async () => {
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs, initialUsers, initializeUsers }
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs, initialUsers, initializeUsers, initializeDb }

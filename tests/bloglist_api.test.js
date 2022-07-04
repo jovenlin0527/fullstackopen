@@ -6,8 +6,12 @@ const helper = require('./test_helper')
 
 const api = supertest(app)
 
+const blogHasAUser = (blog) => {
+  expect(blog.user).toEqual(expect.anything()) // not null nor undefined
+  expect(blog.user).toEqual(expect.any(Object))
+}
 
-beforeEach(helper.initializeBlogs)
+beforeEach(helper.initializeDb)
 
 describe('Get blog list', () => {
   test('Blogs are returned as json', async () => {
@@ -26,6 +30,14 @@ describe('Get blog list', () => {
     const blogs = response.body
     blogs.forEach(b => expect(b.id).toBeDefined())
     blogs.forEach(b => expect(b._id).toBeUndefined())
+  })
+
+  test('Blogs have a user', async() => {
+    const response = await api.get('/api/blogs')
+    const blogs = response.body
+    blogs.forEach(b => {
+      blogHasAUser(b)
+    })
   })
 })
 
@@ -85,6 +97,21 @@ describe('Posting a new blog', () => {
       .expect(400)
     const newBlogs = await helper.currentBlogs()
     expect(newBlogs).toEqual(oldBlogs)
+  })
+
+  test('Assigns a random user', async () => {
+    const newBlog = {
+      title: 'title',
+      author: 'author',
+      url: 'http://localhost/',
+      likes: 0
+    }
+    const response = await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+    const blog = response.body
+    blogHasAUser(blog)
   })
 })
 
