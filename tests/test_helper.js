@@ -41,7 +41,7 @@ const initialBlogs = [
 
 const currentBlogs = () => Blog.find({})
 
-const nonexistentId = async () => {
+const nonexistentBlogId = async () => {
   const newBlog = await Blog.create({
     title: 'title',
     author: 'author',
@@ -53,4 +53,4 @@ const nonexistentId = async () => {
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentId }
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId }

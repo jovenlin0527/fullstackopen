@@ -109,7 +109,7 @@ describe('Deleting a blog', () => {
   })
 
   test('404 if a nonexistent blog is deleted', async () => {
-    const id = await helper.nonexistentId()
+    const id = await helper.nonexistentBlogId()
     await api.delete(`/api/blogs/${id}`)
       .expect(404)
   })
@@ -156,7 +156,7 @@ describe('Updating a blog', () => {
     })
 
     test('returns 404 if the object is not found', async() => {
-      const id = await helper.nonexistentId()
+      const id = await helper.nonexistentBlogId()
       await api.patch(`/api/blogs/${id}`)
         .send({})
         .expect(404)
@@ -226,7 +226,7 @@ describe('Updating a blog', () => {
     })
 
     test('returns 404 if no object is found', async () => {
-      const id = await helper.nonexistentId()
+      const id = await helper.nonexistentBlogId()
       await api.put(`/api/blogs/${id}`)
         .send(newBlog)
         .expect(404)
