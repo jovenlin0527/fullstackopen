@@ -50,9 +50,7 @@ const initialUsers = [
 
 const initializeBlogs = async () => {
   await Blog.deleteMany({})
-  for (const b of initialBlogs) {
-    await Blog.create(b) // avoid race condition: multiple blogs may try to add itself to the same user.
-  }
+  await Promise.all(initialBlogs.map(b => Blog.create(b)))
 }
 
 const initializeUsers = async () => {
