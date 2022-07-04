@@ -54,22 +54,27 @@ const initializeUsers = async () => {
 }
 
 const initializeDb = async () => {
-  const [users] = await Promise.all([initializeUsers(), Blog.deleteMany({})])
-  const userId = users[0]._id
+  const [user] = await initializeUsers()
+  await Blog.deleteMany({}).lean().select('_id')
+  const userId = user._id
   await Promise.all(initialBlogs.map(b => Blog.create({ ...b, user: userId } )))
 }
 
 const currentBlogs = () => Blog.find({})
 
-const nonexistentBlogId = async () => {
+const nonexistentBlogId = async ({ _id : userId }) => {
+  if (userId == null) {
+    return null
+  }
   const newBlog = await Blog.create({
     title: 'title',
     author: 'author',
     url: 'http://localhost/',
-    likes: 0
+    likes: 0,
+    user: userId
   })
   const id = newBlog.id
-  await Blog.findByIdAndDelete(id)
+  await newBlog.remove()
   return id
 }
 

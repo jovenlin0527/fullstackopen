@@ -123,26 +123,61 @@ describe('Post a new blog', () => {
   })
 })
 
-describe.skip('Deleting a blog', () => {
-  test('Blog is deleted from db', async () => {
+describe('Deleting a blog', () => {
+  const deleteAsUser = (user, id) => {
+    const token = user.getJwtToken()
+    return api.delete(`/api/blogs/${id}`)
+      .set('Authorization', 'bearer ' + token)
+  }
+
+  test('Always 401 if not authenticated', async () => {
     const randomBlog = await Blog.findOne({})
     const id = randomBlog.id
     await api.delete(`/api/blogs/${id}`)
+      .expect(401)
 
-    const deletedBlog = await Blog.findById(id)
+    const updatedBlogs = await Blog.find({})
+    expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
+  })
+
+  test('Return 401 if not authenticated even for nonexistent blogs', async () => {
+    const user = await User.findOne({}).select('_id').lean()
+    const badId = await helper.nonexistentBlogId(user)
+    await api.delete(`/api/blogs/${badId}`)
+      .expect(401)
+
+    const updatedBlogs = await Blog.find({})
+    expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
+  })
+
+  test('You cannot delete a blog you don\'t own', async () => {
+    const { _id: blogId } = await Blog.findOne({}, 'id', { lean: true })
+    const newUser = await User.create({ name: 'name', username: 'username', password: 'password' })
+    await deleteAsUser(newUser, blogId)
+      .expect(403)
+    expect(await Blog.exists({ _id: blogId })).toBeTruthy()
+  })
+
+  test('Blog is deleted from db', async () => {
+    const randomBlog = await Blog.findOne({})
+    const user = await User.findById(randomBlog.user)
+    await deleteAsUser(user, randomBlog.id)
+
+    const deletedBlog = await Blog.findById(randomBlog.id)
     expect(deletedBlog).toBeNull()
   })
 
   test('HTTP response is 204', async() => {
     const randomBlog = await Blog.findOne({})
-    const id = randomBlog.id
-    await api.delete(`/api/blogs/${id}`)
+    const user = await User.findById(randomBlog.user)
+    await deleteAsUser(user, randomBlog.id)
       .expect(204)
   })
 
   test('404 if a nonexistent blog is deleted', async () => {
-    const id = await helper.nonexistentBlogId()
-    await api.delete(`/api/blogs/${id}`)
+    const user = await User.findOne({})
+    const id = await helper.nonexistentBlogId(user)
+    await deleteAsUser(user, id)
       .expect(404)
   })
 })
@@ -188,7 +223,8 @@ describe.skip('Updating a blog', () => {
     })
 
     test('returns 404 if the object is not found', async() => {
-      const id = await helper.nonexistentBlogId()
+      const { _id: userId } = await User.findOne({}).select('_id').lean()
+      const id = await helper.nonexistentBlogId(userId)
       await api.patch(`/api/blogs/${id}`)
         .send({})
         .expect(404)

@@ -37,11 +37,19 @@ bloglistRouter.post('/', async (request, response) => {
 })
 
 bloglistRouter.delete('/:id', async(request, response) => {
-  const doc = await Blog.findByIdAndDelete(request.params.id)
-  if (doc == null) {
-    response.status(404).json({ error: 'blog not found' })
+  const userId = await getUserIdFromRequest(request)
+  if (userId == null) {
+    return response.status(401).json({ error: 'invalid token' })
+  }
+  const blog = await Blog.findById(request.params.id)
+  if (blog == null) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+  if (blog.user.equals(userId)) {
+    await blog.remove()
+    return response.status(204).end()
   } else {
-    response.status(204).end()
+    return response.status(403).json({ error: 'not the owner' })
   }
 })
 
