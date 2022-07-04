@@ -50,13 +50,13 @@ const initialUsers = [
 
 const initializeUsers = async () => {
   await User.deleteMany({})
-  await User.create(initialUsers)
+  return await User.create(initialUsers)
 }
 
 const initializeDb = async () => {
-  await initializeUsers()
-  await Blog.deleteMany({})
-  await Promise.all(initialBlogs.map(b => Blog.create(b)))
+  const [users] = await Promise.all([initializeUsers(), Blog.deleteMany({})])
+  const userId = users[0]._id
+  await Promise.all(initialBlogs.map(b => Blog.create({ ...b, user: userId } )))
 }
 
 const currentBlogs = () => Blog.find({})

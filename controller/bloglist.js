@@ -26,11 +26,11 @@ const getUserIdFromRequest = async (request) => {
 }
 
 bloglistRouter.post('/', async (request, response) => {
-  const user = await getUserIdFromRequest(request)
-  if (user == null) {
+  const userId = await getUserIdFromRequest(request)
+  if (userId == null) {
     return response.status(401).json({ error: 'invalid token' })
   }
-  const blog = new Blog(request.body)
+  const blog = new Blog({ ...request.body, user: userId })
   const savedBlog = await blog.save()
   await savedBlog.populate('user')
   response.status(201).json(savedBlog)

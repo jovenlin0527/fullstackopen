@@ -54,7 +54,6 @@ describe('Post a new blog', () => {
 
   const postAsUser = (user, blog) => {
     const token = user.getJwtToken()
-    blog.user = user._id
     const authorizationHeader = 'bearer ' + token
     return api.post('/api/blogs')
       .set('Authorization', authorizationHeader)
