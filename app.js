@@ -11,6 +11,8 @@ const app = express()
 
 const bloglistRouter = require('./controller/bloglist')
 const userRouter = require('./controller/user')
+const loginRouter = require('./controller/login')
+
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 
@@ -29,6 +31,7 @@ app.use(express.json())
 
 app.use('/api/blogs', bloglistRouter)
 app.use('/api/users', userRouter)
+app.use('/api/login', loginRouter)
 
 app.use(middleware.errorHandler)
 
