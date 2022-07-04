@@ -58,6 +58,9 @@ userSchema.plugin(uniqueValidator)
 const User = mongoose.model('User', userSchema)
 
 User.fromJwtToken = async (token) => {
+  if (token == null) {
+    return null
+  }
   const { username, id } = jwt.verify(token, process.env.SECRET)
   const user = await User.findById(id)
   assert.equal(username, user.username)

@@ -1,13 +1,34 @@
 'use strict'
 const bloglistRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 bloglistRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user')
   response.json(blogs)
 })
 
+const getTokenFormRequest = (request) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
+
+const getUserFromRequest = (request) => {
+  const token = getTokenFormRequest(request)
+  if (token == null) {
+    return null
+  }
+  return User.fromJwtToken(token)
+}
+
 bloglistRouter.post('/', async (request, response) => {
+  const user = await getUserFromRequest(request)
+  if (user == null) {
+    return response.status(401).json({ error: 'invalid token' })
+  }
   const blog = new Blog(request.body)
   const savedBlog = await blog.save()
   await savedBlog.populate('user')
