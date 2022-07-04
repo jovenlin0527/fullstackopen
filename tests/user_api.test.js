@@ -49,6 +49,55 @@ describe('Create users', () => {
   })
 })
 
+describe('Create invalid users', () => {
+  const newUser = {
+    username: 'jason',
+    password: 'jason',
+    name: 'Jason Lin'
+  }
+
+  const postAndCheckResponse = async (user) => {
+    const response = await api.post('/api/users')
+      .send(user)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+    return response
+  }
+
+  const checkNoUserIsAdded = async () => {
+    const currentUser = await User.find({})
+    expect(currentUser.length).toBe(helper.initialUsers.length)
+  }
+
+  test('does not accept short username', async () => {
+    const response = await postAndCheckResponse( { ...newUser, username: 'a' } )
+    const errorMsg = response.body.error
+    expect(errorMsg).toBeDefined()
+    expect(errorMsg).toContain('username')
+    expect(errorMsg).toContain('short')
+    await checkNoUserIsAdded()
+  })
+
+  test('does not accept short password', async () => {
+    const response = await postAndCheckResponse( { ...newUser, password: 'a' } )
+    const errorMsg = response.body.error
+    expect(errorMsg).toBeDefined()
+    expect(errorMsg).toContain('password')
+    expect(errorMsg).toContain('short')
+    await checkNoUserIsAdded()
+  })
+
+  test('username must be unique', async () => {
+    const existingUser = helper.initialUsers[0]
+    const response = await postAndCheckResponse(existingUser)
+    const errorMsg = response.body.error
+    expect(errorMsg).toBeDefined()
+    expect(errorMsg).toContain('username')
+    expect(errorMsg).toContain('unique')
+    await checkNoUserIsAdded()
+  })
+})
+
 describe('List users', () => {
   test('HTTP 200 response in json', async () => {
     await api.get('/api/users')

@@ -8,6 +8,9 @@ userRouter.get('/', async (_request, response) => {
 
 userRouter.post('/', async(request, response) => {
   const userData = request.body
+  if (userData.password.length < 3) {
+    return response.status(400).json({ error: 'password too short' })
+  }
   const user = await User.create(userData)
   response.status(201).json(user)
 })
