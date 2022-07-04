@@ -1,6 +1,6 @@
 'use strict'
 const bloglistRouter = require('express').Router()
-const Blog = require('../models/Blog')
+const Blog = require('../models/blog')
 
 bloglistRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
