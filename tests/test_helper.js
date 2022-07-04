@@ -48,11 +48,6 @@ const initialUsers = [
   }
 ]
 
-const initializeBlogs = async () => {
-  await Blog.deleteMany({})
-  await Promise.all(initialBlogs.map(b => Blog.create(b)))
-}
-
 const initializeUsers = async () => {
   await User.deleteMany({})
   await User.create(initialUsers)
@@ -60,7 +55,8 @@ const initializeUsers = async () => {
 
 const initializeDb = async () => {
   await initializeUsers()
-  await initializeBlogs()
+  await Blog.deleteMany({})
+  await Promise.all(initialBlogs.map(b => Blog.create(b)))
 }
 
 const currentBlogs = () => Blog.find({})
@@ -77,4 +73,4 @@ const nonexistentBlogId = async () => {
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs, initialUsers, initializeUsers, initializeDb }
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId, initialUsers, initializeUsers, initializeDb }
