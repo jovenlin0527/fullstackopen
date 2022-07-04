@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken')
 const loginRouter = require('express').Router()
 const User = require('../models/user')
 
@@ -11,9 +10,7 @@ loginRouter.post('/', async (request, response) => {
       error: 'Invalid username or password'
     })
   }
-  const userForToken = { username, id: user._id }
-
-  const token = jwt.sign(userForToken, process.env.SECRET)
+  const token = user.getJwtToken()
 
   response.status(200)
     .json({ token, username })

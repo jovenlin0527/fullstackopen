@@ -1,6 +1,8 @@
 'use strict'
+const assert = require('node:assert/strict')
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const uniqueValidator = require('mongoose-unique-validator')
 
 const saltRounds = 10
@@ -46,6 +48,20 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
 
+userSchema.methods.getJwtToken = function() {
+  const userInfo = { username: this.username, id: this._id }
+  return jwt.sign(userInfo, process.env.SECRET)
+}
+
 userSchema.plugin(uniqueValidator)
+
+const User = mongoose.model('User', userSchema)
+
+User.fromJwtToken = async (token) => {
+  const { username, id } = jwt.verify(token, process.env.SECRET)
+  const user = await User.findById(id)
+  assert.equal(username, user.username)
+  return user
+}
 
 module.exports = mongoose.model('User', userSchema)
