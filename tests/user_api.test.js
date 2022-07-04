@@ -105,6 +105,11 @@ describe('List users', () => {
       .expect('Content-Type', /application\/json/)
   })
 
+  test('returns an array', async () => {
+    const response = await api.get('/api/users')
+    expect(response.body).toEqual(expect.any(Array))
+  })
+
   test('returns every user, without their passowrds', async () => {
     const response = await api.get('/api/users')
     const users = response.body
