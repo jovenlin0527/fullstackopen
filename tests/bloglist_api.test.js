@@ -42,14 +42,14 @@ describe('Get blog list', () => {
 })
 
 describe('Posting a new blog', () => {
-  test('Posted blog is returned correctly', async () => {
-    const newBlog = {
-      title: 'title',
-      author: 'author',
-      url: 'http://localhost/',
-      likes: 0
-    }
+  const newBlog = {
+    title: 'title',
+    author: 'author',
+    url: 'http://localhost/',
+    likes: 0
+  }
 
+  test('Posted blog is returned correctly', async () => {
     const response = await api.post('/api/blogs')
       .send(newBlog)
       .expect(201)
@@ -60,12 +60,6 @@ describe('Posting a new blog', () => {
 
   test('Posted blog is updated to the db', async () => {
     const beforeBlogs = await helper.currentBlogs()
-    const newBlog = {
-      title: 'title',
-      author: 'author',
-      url: 'http://localhost/',
-      likes: 0
-    }
     const response = await api.post('/api/blogs').send(newBlog)
     const newId = response.body.id
 
@@ -76,13 +70,10 @@ describe('Posting a new blog', () => {
   })
 
   test('If new blog has no likes, it defaults to 0', async () => {
-    const newBlog = {
-      title: 'title',
-      author: 'author',
-      url: 'http://localhost/'
-    }
+    const blog = { ...newBlog }
+    delete blog.likes
     const response = await api.post('/api/blogs')
-      .send(newBlog)
+      .send(blog)
       .expect(201) // created succesffuly
     expect(response.body.likes).toBe(0)
   })
@@ -100,12 +91,6 @@ describe('Posting a new blog', () => {
   })
 
   test('Assigns a random user', async () => {
-    const newBlog = {
-      title: 'title',
-      author: 'author',
-      url: 'http://localhost/',
-      likes: 0
-    }
     const response = await api.post('/api/blogs')
       .send(newBlog)
       .expect(201)
