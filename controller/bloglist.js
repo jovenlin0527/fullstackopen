@@ -16,16 +16,17 @@ const getTokenFormRequest = (request) => {
   return null
 }
 
-const getUserFromRequest = (request) => {
+const getUserIdFromRequest = async (request) => {
   const token = getTokenFormRequest(request)
   if (token == null) {
     return null
   }
-  return User.fromJwtToken(token)
+  let { _id } = await User.findByJwtToken(token).select('_id').lean()
+  return _id
 }
 
 bloglistRouter.post('/', async (request, response) => {
-  const user = await getUserFromRequest(request)
+  const user = await getUserIdFromRequest(request)
   if (user == null) {
     return response.status(401).json({ error: 'invalid token' })
   }

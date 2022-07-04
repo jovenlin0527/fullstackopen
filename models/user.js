@@ -57,14 +57,12 @@ userSchema.plugin(uniqueValidator)
 
 const User = mongoose.model('User', userSchema)
 
-User.fromJwtToken = async (token) => {
+User.findByJwtToken = (token) => {
   if (token == null) {
     return null
   }
   const { username, id } = jwt.verify(token, process.env.SECRET)
-  const user = await User.findById(id)
-  assert.equal(username, user.username)
-  return user
+  return User.findOne( { _id: id, username } )
 }
 
 module.exports = mongoose.model('User', userSchema)

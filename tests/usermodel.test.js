@@ -11,7 +11,7 @@ beforeEach(async () => await helper.initializeUsers())
 test('JWT works', async () => {
   const user = await User.findOne({})
   const token = user.getJwtToken()
-  const userForToken = await User.fromJwtToken(token)
+  const userForToken = await User.findByJwtToken(token)
   expect(userForToken).toEqual(user)
 })
 
