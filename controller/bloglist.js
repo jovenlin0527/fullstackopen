@@ -3,13 +3,14 @@ const bloglistRouter = require('express').Router()
 const Blog = require('../models/blog')
 
 bloglistRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
+  const blogs = await Blog.find({}).populate('user')
   response.json(blogs)
 })
 
 bloglistRouter.post('/', async (request, response) => {
   const blog = new Blog(request.body)
   const savedBlog = await blog.save()
+  await savedBlog.populate('user')
   response.status(201).json(savedBlog)
 })
 
@@ -29,6 +30,7 @@ bloglistRouter.patch('/:id', async(request, response) => {
   if (doc == null) {
     response.status(404).json({ error: 'blog not found' })
   } else {
+    await doc.populate()
     response.status(200).json(doc)
   }
 })

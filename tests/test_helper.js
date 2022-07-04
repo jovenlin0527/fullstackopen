@@ -58,6 +58,11 @@ const initializeUsers = async () => {
   await User.create(initialUsers)
 }
 
+const initializeDb = async () => {
+  await initializeUsers()
+  await initializeBlogs()
+}
+
 const currentBlogs = () => Blog.find({})
 
 const nonexistentBlogId = async () => {
@@ -72,4 +77,4 @@ const nonexistentBlogId = async () => {
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs, initialUsers, initializeUsers }
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId , initializeBlogs, initialUsers, initializeUsers, initializeDb }
