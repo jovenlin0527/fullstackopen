@@ -9,7 +9,7 @@ const api = supertest(app)
 
 const base_url = '/api/users'
 
-beforeEach(helper.initializeUsers)
+beforeEach(helper.initializeDb)
 
 describe('Create users', () => {
   const newUser = {
@@ -119,6 +119,7 @@ describe('List users', () => {
       .map(user => {
         user = { ...user }
         delete user.id
+        delete user.blogs
         return user
       })
       .value()
@@ -137,6 +138,17 @@ describe('List users', () => {
     const response = await api.get('/api/users')
     expect(response.body[0].id).toBeDefined()
   })
+})
+
+test('users have a blog list', async () => {
+  const response = await api.get('/api/users')
+  const user = response.body[0]
+  expect(user.blogs).toEqual(expect.any(Array))
+  user.blogs.forEach(b => {
+    expect(b).toEqual(expect.anything()) // neither null nor undefined
+    expect(b).toEqual(expect.any(Object))
+  })
+
 })
 
 afterAll(() => {

@@ -37,8 +37,17 @@ blogSchema.set('toJSON', {
 blogSchema.pre('save', async function() {
   let blog = this
   if (blog.user == null) {
-    const randomUser = await User.findOne({})
-    blog.user = randomUser.id
+    const user = await User.findOne({})
+    blog.user = user.id
+  }
+})
+
+blogSchema.post('save', async function () {
+  const blog = this
+  const user = await User.findById(blog.user)
+  if (!user.blogs.some(x => x.id === blog.id)) {
+    user.blogs = user.blogs.concat(blog.id)
+    user.save()
   }
 })
 
