@@ -136,8 +136,11 @@ describe('Deleting a blog', () => {
   test('Always 401 if not authenticated', async () => {
     const randomBlog = await Blog.findOne({})
     const id = randomBlog.id
-    await api.delete(`/api/blogs/${id}`)
+    const response = await api.delete(`/api/blogs/${id}`)
       .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.error).toEqual(expect.stringContaining('token'))
 
     const updatedBlogs = await Blog.find({})
     expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
@@ -146,8 +149,11 @@ describe('Deleting a blog', () => {
   test('Return 401 if not authenticated even for nonexistent blogs', async () => {
     const user = await User.findOne({}).select('_id').lean()
     const badId = await helper.nonexistentBlogId(user)
-    await api.delete(`/api/blogs/${badId}`)
+    const response = await api.delete(`/api/blogs/${badId}`)
       .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.error).toEqual(expect.stringContaining('token'))
 
     const updatedBlogs = await Blog.find({})
     expect(updatedBlogs).toHaveLength(helper.initialBlogs.length)
@@ -197,10 +203,12 @@ describe('Updating a blog', () => {
     test('returns 401 if not authenticated', async () => {
       const blog = await Blog.findOne({}).select('_id title').lean()
       const { _id: blogId, title } = blog
-      await api.patch(`/api/blogs/${blogId}`)
+      const response = await api.patch(`/api/blogs/${blogId}`)
         .send({ title: 'new ' + title })
         .expect(401)
         .expect('Content-Type', /application\/json/)
+
+      expect(response.body.error).toEqual(expect.stringContaining('token'))
 
       const { title: titleInDb } = await Blog.findById(blogId).select('title').lean()
       expect(titleInDb).toBe(title)
@@ -209,10 +217,12 @@ describe('Updating a blog', () => {
     test('returns 401 if not authenticated even if the blog does not exist', async () => {
       const randomUser = User.findOne({}).select('_id').lean()
       const blogId = await helper.nonexistentBlogId(randomUser)
-      await api.patch(`/api/blogs/${blogId}`)
+      const response = await api.patch(`/api/blogs/${blogId}`)
         .send({ title: 'new title' })
         .expect(401)
         .expect('Content-Type', /application\/json/)
+
+      expect(response.body.error).toEqual(expect.stringContaining('token'))
     })
 
     test('You cannot patch a blog you don\'t own', async () => {
