@@ -109,6 +109,9 @@ describe('Post a new blog', () => {
     const response = await postAsUser(await randomUser(), blog)
       .expect(201) // created succesffuly
     expect(response.body.likes).toBe(0)
+
+    const { likes: likesInDb } = await Blog.findById(response.body.id).select('likes').lean()
+    expect(likesInDb).toBe(0)
   })
 
   test('Do not accept blogs without title and url', async () => {
@@ -182,56 +185,123 @@ describe('Deleting a blog', () => {
   })
 })
 
-describe.skip('Updating a blog', () => {
+describe('Updating a blog', () => {
   describe('PATCH behaves correctly', () => {
-    test('returns a JSON object if successfull', async () => {
-      const targetBlog = await Blog.findOne({})
-      const id = targetBlog.id
-      await api.patch(`/api/blogs/${id}`)
-        .send({})
-        .expect(200)
+    const patchAsUser = (user, blogId, payload) => {
+      let token = user.getJwtToken()
+      return api.patch(`/api/blogs/${blogId}`)
+        .set('Authorization', 'bearer ' + token)
+        .send(payload)
+    }
+
+    test('returns 401 if not authenticated', async () => {
+      const blog = await Blog.findOne({}).select('_id title').lean()
+      const { _id: blogId, title } = blog
+      await api.patch(`/api/blogs/${blogId}`)
+        .send({ title: 'new ' + title })
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      const { title: titleInDb } = await Blog.findById(blogId).select('title').lean()
+      expect(titleInDb).toBe(title)
+    })
+
+    test('returns 401 if not authenticated even if the blog does not exist', async () => {
+      const randomUser = User.findOne({}).select('_id').lean()
+      const blogId = await helper.nonexistentBlogId(randomUser)
+      await api.patch(`/api/blogs/${blogId}`)
+        .send({ title: 'new title' })
+        .expect(401)
         .expect('Content-Type', /application\/json/)
     })
 
+    test('You cannot patch a blog you don\'t own', async () => {
+      const [ { _id: blogId, title }, newUser ] = await Promise.all( [
+        Blog.findOne({}).select('_id title').lean(),
+        User.create({ username: 'username', name: 'name', password: 'password' })
+      ])
+
+      await patchAsUser(newUser, blogId, { title: 'new ' + title })
+        .expect(403)
+        .expect('Content-Type', /application\/json/)
+      const { title: titleInDb } = await Blog.findById(blogId).select('title').lean()
+      expect(titleInDb).toBe(title)
+    })
+
+    test('returns the updated object in JSON format', async () => {
+      const targetBlog = await Blog.findOne({}).lean()
+      const user = await User.findById(targetBlog.user)
+      const newBlog = {
+        title: 'new' + targetBlog.title,
+        author: 'new' + targetBlog.author,
+        // Do not update url
+        // we don't update every attribute in order to test
+        // whether PATCH still returnes the attributes we omitted
+        likes: 100 + targetBlog.likes
+      }
+      const response = await patchAsUser(user, targetBlog._id, newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      const content = response.body
+      expect(content).toMatchObject(newBlog)
+      expect(content.url).toBe(targetBlog.url)
+    })
+
     test('returns the existing object if nothing is updated', async () => {
-      const targetBlog = await Blog.findOne({})
-      const id = targetBlog.id
-      const response = await api.patch(`/api/blogs/${id}`).send({})
-      expect(JSON.stringify(response.body)).toEqual(JSON.stringify(targetBlog))
+      const targetBlog = await Blog.findOne({}).select({ __v: false }).lean()
+      const user = await User.findById(targetBlog.user)
+      const response = await patchAsUser(user, targetBlog._id, {})
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      const returnedBlog = response.body
+      targetBlog.id = targetBlog._id.toString()
+      delete targetBlog._id
+
+      // depopulate
+      delete returnedBlog.user
+      delete targetBlog.user
+      expect(returnedBlog).toEqual(targetBlog)
     })
 
     test('updates the existing object in db', async () => {
-      const targetBlog = await Blog.findOne({})
-      const likes = targetBlog.likes
-      const newLikes = likes + 10
-      const id = targetBlog.id
-      await api.patch(`/api/blogs/${id}`)
-        .send({ likes: newLikes })
-      const updatedBlog = await Blog.findById(id)
-      expect(updatedBlog.likes).toBe(newLikes)
-    })
+      const targetBlog = await Blog.findOne({}).lean()
+      const user = await User.findById(targetBlog.user)
+      const newBlog = {
+        title: 'new' + targetBlog.title,
+        author: 'new' + targetBlog.author,
+        // Do not update url
+        // we don't update every attribute in order to test
+        // whether PATCH still returnes the attributes we omitted
+        likes: 100 + targetBlog.likes
+      }
+      await patchAsUser(user, targetBlog._id, newBlog)
 
-    test('returns the updated object', async () => {
-      const targetBlog = await Blog.findOne({})
-      const likes = targetBlog.likes
-      const newLikes = likes + 10
-      const id = targetBlog.id
-      const returned = await api.patch(`/api/blogs/${id}`)
-        .send({ likes: newLikes })
-      const returnedBlog = returned.body
-      expect(returnedBlog.likes).toBe(newLikes)
+      const newBlogInDb = await Blog.findById(targetBlog._id).lean()
+      expect(newBlogInDb).toMatchObject(newBlog)
     })
 
     test('returns 404 if the object is not found', async() => {
-      const { _id: userId } = await User.findOne({}).select('_id').lean()
-      const id = await helper.nonexistentBlogId(userId)
-      await api.patch(`/api/blogs/${id}`)
-        .send({})
+      const user = await User.findOne({})
+      const id = await helper.nonexistentBlogId(user._id)
+      await patchAsUser(user, id, {})
         .expect(404)
     })
+
+    test('disallow changing the owner', async () => {
+      const { _id: blogId, user: userId } =
+        await Blog.findOne({}).select('_id user').lean()
+      const user = await User.findById(userId)
+      const newUser = await User.create({ username: 'username', name: 'name', password: 'password' })
+      await patchAsUser(user, blogId, { user: newUser.id })
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+    })
+
   })
 
-  describe('PUT behaves correctly', () => {
+  describe.skip('PUT behaves correctly', () => {
     const newBlog = {
       title: 'newTitle',
       author: 'newAuthor',

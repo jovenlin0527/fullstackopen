@@ -54,14 +54,23 @@ bloglistRouter.delete('/:id', async(request, response) => {
 })
 
 bloglistRouter.patch('/:id', async(request, response) => {
-  const id = request.params.id
-  const newBlog = request.body
-  const doc = await Blog.findByIdAndUpdate(id, newBlog, { returnDocument: 'after' })
-  if (doc == null) {
-    response.status(404).json({ error: 'blog not found' })
+  const userId = await getUserIdFromRequest(request)
+  if (userId == null) {
+    return response.status(401).json({ error: 'invalid token' })
+  }
+  const blog = await Blog.findById(request.params.id)
+  if (blog == null) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+  if (blog.user.equals(userId)) {
+    if (request.body.user != null && request.body.user !== userId) {
+      return response.status(400).json({ error: 'can\'t change the user' })
+    }
+    Object.assign(blog, request.body)
+    await blog.save()
+    return response.status(200).json(blog)
   } else {
-    await doc.populate()
-    response.status(200).json(doc)
+    return response.status(403).json({ error: 'not the owner' })
   }
 })
 
