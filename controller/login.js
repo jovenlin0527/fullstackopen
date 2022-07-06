@@ -13,7 +13,7 @@ loginRouter.post('/', async (request, response) => {
   const token = user.getJwtToken()
 
   response.status(200)
-    .json({ token, username })
+    .json({ token, username, name: user.name })
 })
 
 module.exports = loginRouter

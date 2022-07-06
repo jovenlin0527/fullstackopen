@@ -25,6 +25,7 @@ describe('Good login', () => {
     expect(info.username).toBe(user.username)
     expect(info).not.toHaveProperty('id')
     expect(info.token).toEqual(expect.any(String))
+    expect(info.name).toBe(user.name)
   })
 
   test('The JWT token is linked to the logged user', async () => {
