@@ -9,35 +9,30 @@ bloglistRouter.get('/', async (request, response) => {
 })
 
 const getUserIdFromRequest = async (request) => {
-  const token = request.token
-  if (token == null) {
-    return null
-  }
-  let { _id } = await User.findByJwtToken(token).select('_id').lean()
-  return _id
+  return request?.user?._id
 }
 
 bloglistRouter.post('/', async (request, response) => {
-  const userId = await getUserIdFromRequest(request)
-  if (userId == null) {
+  const user = request.user
+  if (user == null) {
     return response.status(401).json({ error: 'invalid token' })
   }
-  const blog = new Blog({ ...request.body, user: userId })
+  const blog = new Blog({ ...request.body, user: user.id })
   const savedBlog = await blog.save()
   await savedBlog.populate('user')
   response.status(201).json(savedBlog)
 })
 
 bloglistRouter.delete('/:id', async(request, response) => {
-  const userId = await getUserIdFromRequest(request)
-  if (userId == null) {
+  const user = request.user
+  if (user == null) {
     return response.status(401).json({ error: 'invalid token' })
   }
   const blog = await Blog.findById(request.params.id)
   if (blog == null) {
     return response.status(404).json({ error: 'blog not found' })
   }
-  if (blog.user.equals(userId)) {
+  if (blog.user.equals(user.id)) {
     await blog.remove()
     return response.status(204).end()
   } else {
@@ -46,16 +41,16 @@ bloglistRouter.delete('/:id', async(request, response) => {
 })
 
 bloglistRouter.patch('/:id', async(request, response) => {
-  const userId = await getUserIdFromRequest(request)
-  if (userId == null) {
+  const user = request.user
+  if (user == null) {
     return response.status(401).json({ error: 'invalid token' })
   }
   const blog = await Blog.findById(request.params.id)
   if (blog == null) {
     return response.status(404).json({ error: 'blog not found' })
   }
-  if (blog.user.equals(userId)) {
-    if (request.body.user != null && request.body.user !== userId) {
+  if (blog.user.equals(user.id)) {
+    if (request.body.user != null && request.body.user !== user.id) {
       return response.status(400).json({ error: 'can\'t change the user' })
     }
     Object.assign(blog, request.body)
@@ -67,29 +62,26 @@ bloglistRouter.patch('/:id', async(request, response) => {
 })
 
 bloglistRouter.put('/:id', async(request, response) => {
-  const userId = await getUserIdFromRequest(request)
-
-  if (userId == null) {
+  const user = request.user
+  if (user == null) {
     return response.status(401).json({ error: 'invalid token' })
   }
 
   const oldBlog = await Blog.findById(request.params.id)
-
   if (oldBlog == null) {
     return response.status(404).json({ error: 'blog not found' })
   }
-
-  if (!oldBlog.user.equals(userId)) {
+  if (!oldBlog.user.equals(user.id)) {
     return response.status(403).json({ error: 'not the owner' })
   }
 
   const newBlog = request.body
   if (newBlog.user) {
-    if (!userId.equals(newBlog.user)) {
+    if (!user._id.equals(newBlog.user)) {
       return response.status(400).json({ error: 'cannot change the user' })
     }
   } else {
-    newBlog.user = userId
+    newBlog.user = user._id
   }
 
   await Blog.validate(newBlog)

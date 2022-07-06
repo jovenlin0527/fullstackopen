@@ -30,7 +30,7 @@ app.use(cors())
 app.use(express.json())
 app.use(middleware.tokenExtracter)
 
-app.use('/api/blogs', bloglistRouter)
+app.use('/api/blogs', middleware.userExtracter, bloglistRouter)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
 

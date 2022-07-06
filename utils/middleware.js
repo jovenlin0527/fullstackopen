@@ -1,6 +1,7 @@
 'use strict'
 
 const logger = require('./logger')
+const User = require('../models/user')
 
 const errorHandler = (error, _request, response, next) => {
   logger.error(error)
@@ -20,4 +21,11 @@ const tokenExtracter = (request, _response, next) => {
   next()
 }
 
-module.exports = { errorHandler, tokenExtracter }
+const userExtracter = async (request, _response, next) => {
+  if (request.token) {
+    request.user = await User.findByJwtToken(request.token)
+  }
+  next()
+}
+
+module.exports = { errorHandler, tokenExtracter, userExtracter }
