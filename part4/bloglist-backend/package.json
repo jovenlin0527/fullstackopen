@@ -1,0 +1,31 @@
+{
+  "name": "bloglist",
+  "version": "0.0.1",
+  "description": "exercise for fullstackopen part 4",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "test": "NODE_ENV=test jest --verbose --runInBand --forceExit",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "lint": "eslint ."
+  },
+  "author": "b05902132",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "mongoose": "^6.4.2",
+    "mongoose-unique-validator": "^3.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.19.0",
+    "jest": "^28.1.2",
+    "nodemon": "^2.0.18",
+    "supertest": "^6.2.4"
+  }
+}
