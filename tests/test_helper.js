@@ -54,23 +54,39 @@ const initializeUsers = async () => {
 }
 
 const initializeDb = async () => {
-  const [users] = await Promise.all([initializeUsers(), Blog.deleteMany({})])
-  const userId = users[0]._id
+  const [user] = await initializeUsers()
+  await Blog.deleteMany({}).lean().select('_id')
+  const userId = user._id
   await Promise.all(initialBlogs.map(b => Blog.create({ ...b, user: userId } )))
+}
+
+/* A blog that is not in initialBlogs, suitable for testing. */
+const newBlog = {
+  title: 'new title',
+  author: 'new author',
+  url: 'http://new-loclahost/',
+  likes: 99999,
+}
+
+/* A user that is not in initialUsers, suitable for testing */
+const newUser = {
+  username: 'newUsername',
+  name: 'new name',
+  password: 'newPassword'
 }
 
 const currentBlogs = () => Blog.find({})
 
-const nonexistentBlogId = async () => {
-  const newBlog = await Blog.create({
-    title: 'title',
-    author: 'author',
-    url: 'http://localhost/',
-    likes: 0
-  })
-  const id = newBlog.id
-  await Blog.findByIdAndDelete(id)
+const nonexistentBlogId = async ({ _id : userId }) => {
+  if (userId == null) {
+    return null
+  }
+  const nonexistentBlog = await Blog.create({ ...newBlog, user: userId })
+  const id = nonexistentBlog.id
+  await nonexistentBlog.remove()
   return id
 }
 
-module.exports = { initialBlogs , currentBlogs, nonexistentBlogId, initialUsers, initializeUsers, initializeDb }
+
+
+module.exports = { initialBlogs , currentBlogs, nonexistentBlogId, initialUsers, initializeUsers, initializeDb, newUser, newBlog }
