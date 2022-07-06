@@ -12,4 +12,12 @@ const errorHandler = (error, _request, response, next) => {
   next(error)
 }
 
-module.exports = { errorHandler }
+const tokenExtracter = (request, _response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    request.token = authorization.substring(7)
+  }
+  next()
+}
+
+module.exports = { errorHandler, tokenExtracter }

@@ -8,16 +8,8 @@ bloglistRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
 
-const getTokenFormRequest = (request) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
-  }
-  return null
-}
-
 const getUserIdFromRequest = async (request) => {
-  const token = getTokenFormRequest(request)
+  const token = request.token
   if (token == null) {
     return null
   }
