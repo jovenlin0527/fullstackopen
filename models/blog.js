@@ -24,6 +24,7 @@ const blogSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     immutable: true,
+    required: true,
   }
 })
 
@@ -35,21 +36,15 @@ blogSchema.set('toJSON', {
   }
 })
 
-blogSchema.pre('save', async function() {
+blogSchema.pre('save', function() {
   let blog = this
   if (blog.isNew) {
-    const condition = (blog.user != null) ? { _id: blog.user } : {}
-    const user = User.findOneAndUpdate(condition, {
+    User.findByIdAndUpdate(blog.user, {
       $push: { blogs: blog._id }
     }, {
       lean: true,
-      projection: '_id'
-    })
-    if (blog.user == null) {
-      blog.user = (await user)._id
-    } else {
-      user.exec() // Queries are not promises, we need to exec() it.
-    }
+      projection: {}
+    }).exec()
   }}
 )
 

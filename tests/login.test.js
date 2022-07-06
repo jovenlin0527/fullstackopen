@@ -31,7 +31,7 @@ describe('Good login', () => {
     const loginInfo = { username: user.username, password: user.password }
     const response = await api.post('/api/login').send(loginInfo)
     const token = response.body.token
-    const userForToken = await User.fromJwtToken(token)
+    const userForToken = await User.findByJwtToken(token).lean().select('username')
     expect(userForToken.username).toBe(loginInfo.username)
   })
 })
