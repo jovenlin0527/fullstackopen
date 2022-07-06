@@ -298,73 +298,131 @@ describe('Updating a blog', () => {
 
   })
 
-  describe.skip('PUT behaves correctly', () => {
-    const newBlog = {
-      title: 'newTitle',
-      author: 'newAuthor',
-      url: 'localhost',
-      likes: 8000
+  describe('PUT behaves correctly', () => {
+    const putAsUser = (user, blogId, payload) => {
+      const token = user.getJwtToken()
+      return api.put(`/api/blogs/${blogId}`)
+        .set('Authorization', 'bearer ' + token)
+        .send(payload)
     }
 
-    test('returns a JSON object if successfull', async () => {
-      const randomBlog = await Blog.findOne({})
-      const id = randomBlog.id
-      await api.put(`/api/blogs/${id}`)
-        .send(newBlog)
+    test('returns 401 if not authenticated, do not modify db', async () => {
+      const blog = await Blog.findOne({}).lean()
+      const response = await api.put(`/api/blogs/${blog._id}`)
+        .send(helper.newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(response.body.error).toEqual(expect.stringContaining('token'))
+
+      const blogInDb = await Blog.findById(blog._id).lean()
+      expect(blogInDb).toEqual(blog)
+    })
+
+    test('returns 401 if not authenticated, even when the blog does not exist', async () => {
+      const id = await helper.nonexistentBlogId( await User.find({}).select('_id').lean() )
+
+      const response = await api.put(`/api/blogs/${id}`)
+        .send(helper.newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      expect(response.body.error).toEqual(expect.stringContaining('token'))
+    })
+
+    test('You can\'t modify blogs of other users', async () => {
+      const [ blog, anotherUser ] = await Promise.all([
+        Blog.findOne({}).lean(),
+        User.create(helper.newUser)
+      ])
+      await putAsUser(anotherUser, blog._id, helper.newBlog)
+        .expect(403)
+        .expect('Content-Type', /application\/json/)
+
+      const blogInDb = await Blog.findById(blog._id).lean()
+      expect(blogInDb).toEqual(blog)
+    })
+
+    test('returns the updated object in json', async () => {
+      const { _id: blogId, user: userId } = await Blog.findOne({}).select('_id user').lean()
+      const user = await User.findById(userId)
+      const response = await putAsUser(user, blogId, helper.newBlog)
         .expect(200)
         .expect('Content-Type', /application\/json/)
+
+      const updatedBlog = response.body
+      expect(updatedBlog).toMatchObject(helper.newBlog)
     })
 
     test('updates the existing object in the db', async () => {
-      const randomBlog = await Blog.findOne({})
-      const id = randomBlog.id
-      await api.put(`/api/blogs/${id}`)
-        .send(newBlog)
-      const updatedBlog = await Blog.findById(id)
-      const updatedObj = JSON.parse(JSON.stringify(updatedBlog))
-      expect(updatedObj).toMatchObject(newBlog)
-    })
+      const { _id: blogId, user: userId } = await Blog.findOne({}).select('_id user').lean()
+      const user = await User.findById(userId)
+      await putAsUser(user, blogId, helper.newBlog)
 
-    test('returns the updated object', async () => {
-      const randomBlog = await Blog.findOne({})
-      const id = randomBlog.id
-      const response = await api.put(`/api/blogs/${id}`)
-        .send(newBlog)
-      const updatedBlog = response.body
-      expect(updatedBlog).toMatchObject(newBlog)
+      const updatedBlog = await Blog.findById(blogId).lean()
+      expect(updatedBlog).toMatchObject(helper.newBlog)
     })
 
     test('accepts blogs without a like, defaulting to zero', async () => {
-      const newBlog = { title: 'newTitle', author: 'newAuthor', 'url': 'localhost' }
+      const { _id: blogId, user: userId } = await Blog.findOne({}).select('_id user').lean()
+      const user = await User.findById(userId)
+      const newBlog = { ... helper.newBlog }
+      delete newBlog.likes
       const expectedBlog = { ...newBlog, likes: 0 }
-      const randomBlog = await Blog.findOne({})
-      const id = randomBlog.id
-      const response = await api.put(`/api/blogs/${id}`)
-        .send(newBlog)
-        .expect(200) // should success
+      const response = await putAsUser(user, blogId, newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
       expect(response.body).toMatchObject(expectedBlog)
-      const updatedBlog = await Blog.findById(id)
-      expect(updatedBlog).toMatchObject(expectedBlog)
+      const blogInDB = await Blog.findById(blogId).lean()
+      expect(blogInDB).toMatchObject(expectedBlog)
     })
 
-    test('Do not accept illegal blogs', async() => {
-      let badBlog = {}
-      const randomBlog = await Blog.findOne({})
-      let oldBlog = randomBlog.toObject()
-      const id = randomBlog.id
-      await api.put(`/api/blogs/${id}`)
-        .send(badBlog)
-        .expect(400)
-      let updatedBlog = await Blog.findById(id)
-      expect(updatedBlog.toObject()).toEqual(oldBlog)
+    test('Do not accept illegal blogs', async () => {
+      const randomBlog = await Blog.findOne({}).lean()
+      const user = await User.findById(randomBlog.user)
+      const badBlog = { title: 'badtitle' }
+      await putAsUser(user, randomBlog.id, badBlog)
 
+      const blogInDb = await Blog.findById(randomBlog._id).lean()
+      expect(blogInDb).toEqual(randomBlog)
     })
 
     test('returns 404 if no object is found', async () => {
-      const id = await helper.nonexistentBlogId()
-      await api.put(`/api/blogs/${id}`)
-        .send(newBlog)
+      const user = await User.findOne({})
+      const blogId = await helper.nonexistentBlogId(user)
+      await putAsUser(user, blogId, helper.newBlog)
         .expect(404)
+    })
+
+    test('it\'s okay to put a user with your own userId', async () => {
+      const { _id: blogId, user: userId } = await Blog.findOne({}).select('_id user').lean()
+      const user = await User.findById(userId)
+      const response = await putAsUser(user, blogId, { ...helper.newBlog })
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+
+      expect(response.body).toMatchObject(helper.newBlog)
+      const blogInDb = await Blog.findById(blogId).lean()
+      expect(blogInDb).toMatchObject(helper.newBlog)
+      expect(blogInDb.user).toEqual(user._id)
+    })
+
+    test('Do not modify the user of the blog', async () => {
+      const blogAndUser = async () => {
+        const blog = await Blog.findOne({}).lean()
+        const user = await User.findById(blog.user)
+        return { blog, user }
+      }
+      const [ { blog, user }, newUser ] = await Promise.all([
+        blogAndUser(), User.create(helper.newUser)
+      ])
+
+      await putAsUser(user, blog._id, { ...blog, user: newUser.id })
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      const blogInDb = await Blog.findById(blog._id).lean()
+      expect(blogInDb).toEqual(blog)
     })
   })
 })

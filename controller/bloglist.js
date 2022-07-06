@@ -75,15 +75,34 @@ bloglistRouter.patch('/:id', async(request, response) => {
 })
 
 bloglistRouter.put('/:id', async(request, response) => {
-  const id = request.params.id
-  // Built-in replace and update method don't seem to support validation....
-  await Blog.validate(request.body)
-  const doc = await Blog.findByIdAndUpdate(id, request.body , { overwrite: true, returnDocument: 'after' })
-  if (doc == null) {
-    response.status(404).json({ error: 'blog not found' })
-  } else {
-    response.status(200).json(doc)
+  const userId = await getUserIdFromRequest(request)
+
+  if (userId == null) {
+    return response.status(401).json({ error: 'invalid token' })
   }
+
+  const oldBlog = await Blog.findById(request.params.id)
+
+  if (oldBlog == null) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+
+  if (!oldBlog.user.equals(userId)) {
+    return response.status(403).json({ error: 'not the owner' })
+  }
+
+  const newBlog = request.body
+  if (newBlog.user) {
+    if (!userId.equals(newBlog.user)) {
+      return response.status(400).json({ error: 'cannot change the user' })
+    }
+  } else {
+    newBlog.user = userId
+  }
+
+  await Blog.validate(newBlog)
+  const doc = await Blog.findByIdAndUpdate(oldBlog.id, newBlog, { overwrite: true, returnDocument: 'after' })
+  response.status(200).json(doc)
 })
 
 module.exports = bloglistRouter
