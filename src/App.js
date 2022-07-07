@@ -74,22 +74,32 @@ const BlogForm = ({ submitBlog, ...prop }) => {
 
 
 
-const BlogList = ({name, blogs, handleLogout, submitBlog, ...props}) => {
+const BlogList = ({header, blogs, submitBlog, ...props}) => {
+  const [visibleState, setVisibleState] = useState({})
+  useEffect(() => {
+    const newVisibleState = {...visibleState}
+    for (const b of blogs) {
+      if (!(b.id in visibleState)) {
+        newVisibleState[b.id] = true
+      }
+    }
+    setVisibleState(newVisibleState)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blogs])
   const formRef = useRef()
   const submit = (...args) => {
     formRef.current.toggleVisibility()
     return submitBlog(...args)
-
   }
   return (
     <div {...props}>
-      <h2>blogs</h2>
-      <p> {name} logged in <button onClick={handleLogout}> Logout</button> </p>
-      <div>
-      </div>
+      {header}
       <div>
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} visible={visibleState[blog.id]}
+            doShow={() => setVisibleState({...visibleState, [blog.id]:true})}
+            doHide={() => setVisibleState({...visibleState, [blog.id]:false})}
+          />
         )}
       </div>
       <Togglable buttonLabel="create new blog" ref={formRef} style={{border:"solid", borderRadius:"15px", padding:"5px"}}>
@@ -158,12 +168,20 @@ const App = () => {
     logout()
     pushNotification("Logout success!")
   }
+  const blogHeader = user && (
+    <div>
+      <h2>blogs</h2>
+    <p>
+      {user.name} logged in <button onClick={handleLogout}> Logout</button>
+    </p>
+    </div>
+  )
 
   return (
     <div>
       <NotificationCenter notifications={notifications} />
       <LoginForm handleLogin={handleLogin} hidden={user != null}/>
-      <BlogList submitBlog={submitBlog} blogs={blogs} name={user?.name} hidden={user==null} handleLogout={handleLogout}/>
+      <BlogList header={blogHeader} submitBlog={submitBlog} blogs={blogs} hidden={user==null} />
     </div>
   )
 }
