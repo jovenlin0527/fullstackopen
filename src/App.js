@@ -142,7 +142,7 @@ const App = () => {
       setBlogs(blogs.concat(blog))
       pushNotification(`A new blog ${title} by ${author} is added`)
     } catch (error) {
-      if (error instanceof blogService.PostError) {
+      if (error instanceof blogService.BlogServiceError) {
         pushError(error.message)
       } else {
         throw error

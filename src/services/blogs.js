@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-class PostError extends Error {
+class BlogServiceError extends Error {
 }
 
 const baseUrl = '/api/blogs'
@@ -10,24 +10,30 @@ const setToken = newToken => {
   token = newToken
 }
 
-const post = async ({title, author, url, likes}) => {
-  const config = {
-    headers: {
-      Authorization: 'bearer ' + token
-    }
+const requestConfig = () => ({
+  headers: {
+    Authorization: 'bearer ' + token,
   }
-  likes = likes ?? 0
+})
+
+const tryRequest = async (responsePromise) => {
   try {
-    const response = await axios.post(baseUrl, {title, author, url, likes}, config)
-    return response.data
+    return await responsePromise
   } catch (error) {
     const serverResponse = error?.response?.data?.error
     if (serverResponse) {
-      throw new PostError(serverResponse)
+      throw new BlogServiceError(serverResponse)
     } else {
       throw error
     }
   }
+
+}
+
+const post = async ({title, author, url, likes}) => {
+  likes = likes ?? 0
+  const response = await tryRequest(axios.post(baseUrl, {title, author, url, likes}, requestConfig()))
+  return response.data
 }
 
 const getAll = () => {
@@ -35,4 +41,10 @@ const getAll = () => {
   return request.then(response => response.data)
 }
 
-export default { getAll , post, setToken, PostError}
+const put = async (id, blog) => {
+  const response = await tryRequest(axios.put(baseUrl + `/${id}`, blog, requestConfig()))
+  return response.data
+}
+
+
+export default { getAll , post, put, setToken, BlogServiceError}
