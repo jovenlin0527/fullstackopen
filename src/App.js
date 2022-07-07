@@ -1,24 +1,29 @@
-import { useState, useEffect, useRef} from 'react'
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react'
 
 import Blog from './components/Blog'
+import Togglable from './components/Togglable'
 import {useNotification, NotificationCenter} from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
-const TextField = ({id, name, prompt, type}) => {
+const TextField = forwardRef(({id, name, prompt, type}, refs) => {
   const [text, setText] = useState('')
   type = type ?? 'text'
   id = id ?? name + '_id'
   const update = (event) => {
     setText(event.target.value)
   }
+
+  useImperativeHandle(refs, () => {
+    return {clear: () => setText('')}
+  })
   return (
     <div>
       <label htmlFor={id}>{prompt}</label>
       <input id={id} name={name} value={text} onChange={update} type={type} />
     </div>
   )
-}
+})
 
 const LoginForm = ({ handleLogin, ...prop}) => {
   if (typeof handleLogin !== 'function') {
@@ -28,24 +33,54 @@ which is a function that takes a username and a password,
 and then performs the login.
 `)
   }
+  const fieldRefs = [useRef(), useRef()]
   const submit = (event) => {
     event.preventDefault()
     const {username, password} = event.target
     handleLogin(username.value, password.value)
+    fieldRefs.forEach(x => x.current.clear())
   }
   return (
     <div {...prop}>
       <h2>log in to application</h2>
       <form onSubmit={submit}>
-          <TextField name='username' prompt='uesrname: '/>
-          <TextField name='password' prompt='pasword: ' type='password' />
-          <input type='submit' />
+        <TextField name='username' prompt='username: ' ref={fieldRefs[0]}/>
+        <TextField name='password' prompt='pasword: ' type='password' ref={fieldRefs[1]}/>
+        <input type='submit' />
       </form>
     </div>
   )
 }
 
-const BlogList = ({name, blogs, handleLogout, ...props}) => {
+const BlogForm = ({ submitBlog, ...prop }) => {
+  const submit = (event) => {
+    event.preventDefault()
+    const {title, author, url} = event.target
+    fieldRefs.forEach(x => x.current.clear())
+    return submitBlog({title: title.value, author: author.value, url: url.value})
+  }
+  const fieldRefs = [useRef(), useRef(), useRef()]
+  return (
+    <div {...prop}>
+      <form onSubmit={submit}>
+        <TextField name='title' prompt='title: ' ref={fieldRefs[0]} />
+        <TextField name='author' prompt='author: ' ref={fieldRefs[1]} />
+        <TextField name='url' prompt='url: ' ref={fieldRefs[2]} />
+        <input type='submit' />
+      </form>
+    </div>
+  )
+}
+
+
+
+const BlogList = ({name, blogs, handleLogout, submitBlog, ...props}) => {
+  const formRef = useRef()
+  const submit = (...args) => {
+    formRef.current.toggleVisibility()
+    return submitBlog(...args)
+
+  }
   return (
     <div {...props}>
       <h2>blogs</h2>
@@ -57,24 +92,10 @@ const BlogList = ({name, blogs, handleLogout, ...props}) => {
           <Blog key={blog.id} blog={blog} />
         )}
       </div>
-    </div>
-  )
-}
+      <Togglable buttonLabel="create new blog" ref={formRef} style={{border:"solid", borderRadius:"15px", padding:"5px"}}>
+        <BlogForm submitBlog={submit}/>
+      </Togglable>
 
-const BlogForm = ({ handleSubmit, token, ...prop }) => {
-  const submit = (event) => {
-    event.preventDefault()
-    const {title, author, url} = event.target
-    handleSubmit({title: title.value, author: author.value, url: url.value})
-  }
-  return (
-    <div {...prop}>
-      <form onSubmit={submit}>
-        <TextField name='title' prompt='title: ' />
-        <TextField name='author' prompt='author: ' />
-        <TextField name='url' prompt='url: ' />
-        <input type='submit' />
-      </form>
     </div>
   )
 }
@@ -142,8 +163,7 @@ const App = () => {
     <div>
       <NotificationCenter notifications={notifications} />
       <LoginForm handleLogin={handleLogin} hidden={user != null}/>
-      <BlogList blogs={blogs} name={user?.name} hidden={user==null} handleLogout={handleLogout}/>
-      <BlogForm token={user && user.token} hidden={user==null} handleSubmit={submitBlog}/>
+      <BlogList submitBlog={submitBlog} blogs={blogs} name={user?.name} hidden={user==null} handleLogout={handleLogout}/>
     </div>
   )
 }
