@@ -57,5 +57,8 @@ const put = async (id, blog) => {
   return response.data
 }
 
+const deleteBlog = async (id) => {
+  return await tryRequest(axios.delete(baseUrl + `/${id}`, requestConfig()))
+}
 
-export default { getAll , post, put, setToken, BlogServiceError}
+export default { getAll , post, put, setToken, BlogServiceError, deleteBlog }

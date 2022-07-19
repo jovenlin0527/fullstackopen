@@ -96,6 +96,24 @@ const App = () => {
     }
   }
 
+  const deleteBlog = async(blog) => {
+    if (!window.confirm(`Remove blog ${blog.name} by ${blog.author} ?`)){
+      return
+    }
+    try {
+      await blogService.deleteBlog(blog.id)
+      setBlogs(blogs.filter(b => b.id !== blog.id))
+    } catch (error) {
+      if (error instanceof blogService.BlogServiceError) {
+        pushError(`Can't delete ${blog.name}: ${error.message}`)
+      } else {
+        pushError(`Unknown Error: ${error.message}`)
+        throw error
+      }
+
+    }
+  }
+
   const handleLogin = async (username, password) => {
     try {
       const user = await loginService.login({username, password})
@@ -127,7 +145,13 @@ const App = () => {
     <div>
       <NotificationCenter notifications={notifications} />
       <LoginForm handleLogin={handleLogin} hidden={user != null}/>
-      <BlogList header={blogHeader} submitBlog={submitBlog} blogs={blogs} hidden={user==null} likeBlog={likeBlog} />
+      <BlogList username={user?.username}
+                header={blogHeader}
+                submitBlog={submitBlog}
+                blogs={blogs}
+                hidden={user==null}
+                likeBlog={likeBlog}
+                deleteBlog={deleteBlog} />
     </div>
   )
 }

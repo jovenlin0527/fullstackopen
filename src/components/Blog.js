@@ -3,7 +3,7 @@ import {useState, useRef, useEffect} from 'react'
 import Togglable from './Togglable'
 import TextField from './TextField'
 
-const Blog = ({blog, visible, doShow, doHide, doLike}) => {
+const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
   const blogstyle = {
     paddingLeft: 2,
     border: 'solid',
@@ -14,6 +14,7 @@ const Blog = ({blog, visible, doShow, doHide, doLike}) => {
   const toggleVisible = visible
     ? (<button onClick={doHide}>hide</button>)
     : (<button onClick={doShow}>show</button>) 
+  const deleteButton = (doDelete == null) ? null : (<p><button onClick={doDelete}> delete </button></p>)
   return (
   <div style={blogstyle}>
     <p> {blog.title} {blog.author} {toggleVisible}</p>
@@ -21,6 +22,7 @@ const Blog = ({blog, visible, doShow, doHide, doLike}) => {
     <p> {blog.url} </p>
     <p> likes: {blog.likes} <button onClick={doLike}> like </button> </p>
     <p> {blog.user.name} </p>
+    {deleteButton}
     </div>
   </div>
 
@@ -48,7 +50,7 @@ const BlogForm = ({ submitBlog, ...prop }) => {
 
 
 
-export const BlogList = ({header, blogs, submitBlog, likeBlog, ...props}) => {
+export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteBlog, ...props}) => {
   const [visibleState, setVisibleState] = useState({})
   useEffect(() => {
     const newVisibleState = {...visibleState}
@@ -74,6 +76,7 @@ export const BlogList = ({header, blogs, submitBlog, likeBlog, ...props}) => {
             doShow={() => setVisibleState({...visibleState, [blog.id]:true})}
             doHide={() => setVisibleState({...visibleState, [blog.id]:false})}
             doLike={() => likeBlog(blog)}
+            doDelete={ username === blog.user.username ? () => {deleteBlog(blog)} : null }
           />
         )}
       </div>
