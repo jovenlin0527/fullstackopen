@@ -1,29 +1,13 @@
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react'
+import { useState, useEffect, useRef } from 'react'
 
-import Blog from './components/Blog'
-import Togglable from './components/Togglable'
+import {BlogList} from './components/Blog'
+import TextField from './components/TextField'
 import {useNotification, NotificationCenter} from './components/Notification'
+
 import blogService from './services/blogs'
 import loginService from './services/login'
 
-const TextField = forwardRef(({id, name, prompt, type}, refs) => {
-  const [text, setText] = useState('')
-  type = type ?? 'text'
-  id = id ?? name + '_id'
-  const update = (event) => {
-    setText(event.target.value)
-  }
 
-  useImperativeHandle(refs, () => {
-    return {clear: () => setText('')}
-  })
-  return (
-    <div>
-      <label htmlFor={id}>{prompt}</label>
-      <input id={id} name={name} value={text} onChange={update} type={type} />
-    </div>
-  )
-})
 
 const LoginForm = ({ handleLogin, ...prop}) => {
   if (typeof handleLogin !== 'function') {
@@ -51,66 +35,6 @@ and then performs the login.
     </div>
   )
 }
-
-const BlogForm = ({ submitBlog, ...prop }) => {
-  const submit = (event) => {
-    event.preventDefault()
-    const {title, author, url} = event.target
-    fieldRefs.forEach(x => x.current.clear())
-    return submitBlog({title: title.value, author: author.value, url: url.value})
-  }
-  const fieldRefs = [useRef(), useRef(), useRef()]
-  return (
-    <div {...prop}>
-      <form onSubmit={submit}>
-        <TextField name='title' prompt='title: ' ref={fieldRefs[0]} />
-        <TextField name='author' prompt='author: ' ref={fieldRefs[1]} />
-        <TextField name='url' prompt='url: ' ref={fieldRefs[2]} />
-        <input type='submit' />
-      </form>
-    </div>
-  )
-}
-
-
-
-const BlogList = ({header, blogs, submitBlog, likeBlog, ...props}) => {
-  const [visibleState, setVisibleState] = useState({})
-  useEffect(() => {
-    const newVisibleState = {...visibleState}
-    for (const b of blogs) {
-      if (!(b.id in visibleState)) {
-        newVisibleState[b.id] = true
-      }
-    }
-    setVisibleState(newVisibleState)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blogs])
-  const formRef = useRef()
-  const submit = (...args) => {
-    formRef.current.toggleVisibility()
-    return submitBlog(...args)
-  }
-  return (
-    <div {...props}>
-      {header}
-      <div>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} visible={visibleState[blog.id]}
-            doShow={() => setVisibleState({...visibleState, [blog.id]:true})}
-            doHide={() => setVisibleState({...visibleState, [blog.id]:false})}
-            doLike={() => likeBlog(blog)}
-          />
-        )}
-      </div>
-      <Togglable buttonLabel="create new blog" ref={formRef} style={{border:"solid", borderRadius:"15px", padding:"5px"}}>
-        <BlogForm submitBlog={submit}/>
-      </Togglable>
-
-    </div>
-  )
-}
-
 
 const App = () => {
   const [blogs, _setBlogs] = useState([])
@@ -170,7 +94,6 @@ const App = () => {
         throw error
       }
     }
-
   }
 
   const handleLogin = async (username, password) => {
