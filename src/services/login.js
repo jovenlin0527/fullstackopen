@@ -18,7 +18,7 @@ export const login = async (credentials) => {
       throw new UnexpectedResponseError(response)
     }
     const data = response.data
-    if (!'token' in data) {
+    if (!('token' in data)) {
       throw new BadLogin("The server did not return the login token")
     }
     return data
