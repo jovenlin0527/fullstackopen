@@ -343,6 +343,34 @@ describe('Updating a blog', () => {
       expect(blogInDb).toEqual(blog)
     })
 
+    test('You can increase likes even if the blog is not yours', async () => {
+      const [ blog, user ] = await Promise.all([
+        Blog.findOne({}).lean(),
+        User.create(helper.newUser)
+      ])
+
+      const newBlog = { ...blog, likes: blog.likes + 1 }
+      delete newBlog._id
+      await putAsUser(user, blog._id, newBlog)
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+      const blogInDb = await Blog.findById(blog._id).lean()
+      expect(blogInDb).toMatchObject(newBlog)
+    })
+
+    test('You cannot unlike blogs not owned by you', async () => {
+      const [ blog, user ] = await Promise.all([
+        Blog.findOne({ likes: { $gt: 0 } }).lean(),
+        User.create(helper.newUser)
+      ])
+
+      const newBlog = { ...blog, likes: blog.likes - 1 }
+      await putAsUser(user, blog._id, newBlog)
+        .expect(403)
+      const blogInDb = await Blog.findById(blog._id).lean()
+      expect(blogInDb).toEqual(blog)
+    })
+
     test('returns the updated object in json', async () => {
       const { _id: blogId, user: userId } = await Blog.findOne({}).select('_id user').lean()
       const user = await User.findById(userId)
