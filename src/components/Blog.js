@@ -1,4 +1,4 @@
-const Blog = ({blog, visible, doShow, doHide}) => {
+const Blog = ({blog, visible, doShow, doHide, doLike}) => {
   const blogstyle = {
     paddingLeft: 2,
     border: 'solid',
@@ -14,7 +14,7 @@ const Blog = ({blog, visible, doShow, doHide}) => {
     <p> {blog.title} {blog.author} {toggleVisible}</p>
     <div style={{display: visible ? '' : 'none'}} >
     <p> {blog.url} </p>
-    <p> likes: {blog.likes} <button> like </button> </p>
+    <p> likes: {blog.likes} <button onClick={doLike}> like </button> </p>
     <p> {blog.user.name} </p>
     </div>
   </div>

@@ -74,7 +74,7 @@ const BlogForm = ({ submitBlog, ...prop }) => {
 
 
 
-const BlogList = ({header, blogs, submitBlog, ...props}) => {
+const BlogList = ({header, blogs, submitBlog, likeBlog, ...props}) => {
   const [visibleState, setVisibleState] = useState({})
   useEffect(() => {
     const newVisibleState = {...visibleState}
@@ -99,6 +99,7 @@ const BlogList = ({header, blogs, submitBlog, ...props}) => {
           <Blog key={blog.id} blog={blog} visible={visibleState[blog.id]}
             doShow={() => setVisibleState({...visibleState, [blog.id]:true})}
             doHide={() => setVisibleState({...visibleState, [blog.id]:false})}
+            doLike={() => likeBlog(blog)}
           />
         )}
       </div>
@@ -145,9 +146,26 @@ const App = () => {
       if (error instanceof blogService.BlogServiceError) {
         pushError(error.message)
       } else {
+        pushError(`Unknown error: ${error.message}`)
         throw error
       }
     }
+  }
+
+  const likeBlog = async (blog) => {
+    try {
+      const newBlog = {...blog, likes: blog.likes + 1}
+      await blogService.put(blog.id, newBlog)
+      setBlogs(blogs.map(b => b.id === newBlog.id ? newBlog : b))
+    } catch (error) {
+      if (error instanceof blogService.BlogServiceError) {
+        pushError(`Can't like ${blog.name}: ${error.message}`)
+      } else {
+        pushError(`Unknown Error: ${error.message}`)
+        throw error
+      }
+    }
+
   }
 
   const handleLogin = async (username, password) => {
@@ -181,7 +199,7 @@ const App = () => {
     <div>
       <NotificationCenter notifications={notifications} />
       <LoginForm handleLogin={handleLogin} hidden={user != null}/>
-      <BlogList header={blogHeader} submitBlog={submitBlog} blogs={blogs} hidden={user==null} />
+      <BlogList header={blogHeader} submitBlog={submitBlog} blogs={blogs} hidden={user==null} likeBlog={likeBlog} />
     </div>
   )
 }

@@ -42,7 +42,18 @@ const getAll = () => {
 }
 
 const put = async (id, blog) => {
-  const response = await tryRequest(axios.put(baseUrl + `/${id}`, blog, requestConfig()))
+  const blogToPut = {...blog}
+  if (typeof blogToPut.user !== 'string') {
+    if (typeof blogToPut.user !== 'object') {
+      throw new BlogServiceError('Unexpected blog user type: ', typeof blogToPut.user)
+    }
+    const id = blogToPut.user.id
+    if (typeof id !== 'string') {
+      throw new BlogServiceError('Unexpected blog user id:', id)
+    }
+    blogToPut.user = id
+  }
+  const response = await tryRequest(axios.put(baseUrl + `/${id}`, blogToPut, requestConfig()))
   return response.data
 }
 
