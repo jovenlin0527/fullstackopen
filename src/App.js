@@ -113,9 +113,14 @@ const BlogList = ({header, blogs, submitBlog, likeBlog, ...props}) => {
 
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
+  const [blogs, _setBlogs] = useState([])
   const [user, setUser] = useState(JSON.parse(window.localStorage.getItem('user')))
   const [notifications, pushNotification, pushError] = useNotification()
+
+  const setBlogs = (blogs) => {
+    blogs.sort((l, r) => r.likes - l.likes)
+    _setBlogs(blogs)
+  }
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
