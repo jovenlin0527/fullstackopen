@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
-import {BlogList} from './components/Blog'
+import { BlogList } from './components/Blog'
 import TextField from './components/TextField'
-import {useNotification, NotificationCenter} from './components/Notification'
+import { useNotification, NotificationCenter } from './components/Notification'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -20,7 +20,7 @@ and then performs the login.
   const fieldRefs = [useRef(), useRef()]
   const submit = (event) => {
     event.preventDefault()
-    const {username, password} = event.target
+    const { username, password } = event.target
     handleLogin(username.value, password.value)
     fieldRefs.forEach(x => x.current.clear())
   }
@@ -66,9 +66,9 @@ const App = () => {
     window.localStorage.removeItem('user')
   }
 
-  const submitBlog = async ({title, url, author}) => {
+  const submitBlog = async ({ title, url, author }) => {
     try {
-      const blog = await blogService.post({title, author, url, likes: 0})
+      const blog = await blogService.post({ title, author, url, likes: 0 })
       setBlogs(blogs.concat(blog))
       pushNotification(`A new blog ${title} by ${author} is added`)
     } catch (error) {
@@ -83,7 +83,7 @@ const App = () => {
 
   const likeBlog = async (blog) => {
     try {
-      const newBlog = {...blog, likes: blog.likes + 1}
+      const newBlog = { ...blog, likes: blog.likes + 1 }
       await blogService.put(blog.id, newBlog)
       setBlogs(blogs.map(b => b.id === newBlog.id ? newBlog : b))
     } catch (error) {
@@ -116,7 +116,7 @@ const App = () => {
 
   const handleLogin = async (username, password) => {
     try {
-      const user = await loginService.login({username, password})
+      const user = await loginService.login({ username, password })
       blogService.setToken(user.token)
       pushNotification(`Login success! Hello ${user.name}`)
       login(user)
@@ -130,14 +130,14 @@ const App = () => {
   }
   const handleLogout = () => {
     logout()
-    pushNotification("Logout success!")
+    pushNotification('Logout success!')
   }
   const blogHeader = user && (
     <div>
       <h2>blogs</h2>
-    <p>
-      {user.name} logged in <button onClick={handleLogout}> Logout</button>
-    </p>
+      <p>
+        {user.name} logged in <button onClick={handleLogout}> Logout</button>
+      </p>
     </div>
   )
 
@@ -148,12 +148,12 @@ const App = () => {
         <LoginForm handleLogin={handleLogin}/>
       </div>
       <div hidden={user == null}>
-        <BlogList username={user?.username}
-                  header={blogHeader}
-                  submitBlog={submitBlog}
-                  blogs={blogs}
-                  likeBlog={likeBlog}
-                  deleteBlog={deleteBlog} />
+        <BlogList username={user == null ? null : user.username}
+          header={blogHeader}
+          submitBlog={submitBlog}
+          blogs={blogs}
+          likeBlog={likeBlog}
+          deleteBlog={deleteBlog} />
       </div>
     </div>
   )
