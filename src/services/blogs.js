@@ -20,7 +20,16 @@ const tryRequest = async (responsePromise) => {
   try {
     return await responsePromise
   } catch (error) {
-    const serverResponse = error?.response?.data?.error
+    const getattr = (x, ...argname) => {
+      for (const arg of argname) {
+        x = x[arg]
+        if (x == null) {
+          return null
+        }
+      }
+      return x
+    }
+    const serverResponse = getattr(error, 'response', 'data', 'error')
     if (serverResponse) {
       throw new BlogServiceError(serverResponse)
     } else {
@@ -30,9 +39,9 @@ const tryRequest = async (responsePromise) => {
 
 }
 
-const post = async ({title, author, url, likes}) => {
-  likes = likes ?? 0
-  const response = await tryRequest(axios.post(baseUrl, {title, author, url, likes}, requestConfig()))
+const post = async ({ title, author, url, likes }) => {
+  likes = typeof likes === 'number' ? likes : 0
+  const response = await tryRequest(axios.post(baseUrl, { title, author, url, likes }, requestConfig()))
   return response.data
 }
 
@@ -42,7 +51,7 @@ const getAll = () => {
 }
 
 const put = async (id, blog) => {
-  const blogToPut = {...blog}
+  const blogToPut = { ...blog }
   if (typeof blogToPut.user !== 'string') {
     if (typeof blogToPut.user !== 'object') {
       throw new BlogServiceError('Unexpected blog user type: ', typeof blogToPut.user)
