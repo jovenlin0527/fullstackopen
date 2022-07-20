@@ -1,4 +1,5 @@
 import {forwardRef, useState, useImperativeHandle} from 'react'
+import PropTypes from 'prop-types'
 
 const TextField = forwardRef(({id, name, prompt, type}, refs) => {
   const [text, setText] = useState('')
@@ -18,5 +19,12 @@ const TextField = forwardRef(({id, name, prompt, type}, refs) => {
     </div>
   )
 })
+
+TextField.propType = {
+  name: PropTypes.string.isRequired,
+  id: PropTypes.string,
+  type: PropTypes.string,
+  prompt: PropTypes.string.isRequired,
+}
 
 export default TextField

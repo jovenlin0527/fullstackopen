@@ -1,7 +1,17 @@
 import {useState, useRef, useEffect} from 'react'
+import PropTypes from 'prop-types'
 
 import Togglable from './Togglable'
 import TextField from './TextField'
+
+const BlogType = PropTypes.exact({
+  title: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  likes: PropTypes.number.isRequired,
+  user: PropTypes.object.isRequired,
+  id: PropTypes.string.isRequired,
+})
 
 const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
   const blogstyle = {
@@ -25,10 +35,19 @@ const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
     {deleteButton}
     </div>
   </div>
-
 )}
 
-const BlogForm = ({ submitBlog, ...prop }) => {
+Blog.propTypes = {
+  blog: BlogType,
+  visible: PropTypes.bool,
+  doShow: PropTypes.func.isRequired,
+  doHide: PropTypes.func.isRequired,
+  doLike: PropTypes.func.isRequired,
+  doDelete: PropTypes.func,
+}
+
+
+const BlogForm = ({ submitBlog }) => {
   const submit = (event) => {
     event.preventDefault()
     const {title, author, url} = event.target
@@ -37,7 +56,7 @@ const BlogForm = ({ submitBlog, ...prop }) => {
   }
   const fieldRefs = [useRef(), useRef(), useRef()]
   return (
-    <div {...prop}>
+    <div>
       <form onSubmit={submit}>
         <TextField name='title' prompt='title: ' ref={fieldRefs[0]} />
         <TextField name='author' prompt='author: ' ref={fieldRefs[1]} />
@@ -48,9 +67,13 @@ const BlogForm = ({ submitBlog, ...prop }) => {
   )
 }
 
+BlogForm.propTypes = {
+  submitBlog: PropTypes.func.isRequired,
+}
 
 
-export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteBlog, ...props}) => {
+
+export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteBlog}) => {
   const [visibleState, setVisibleState] = useState({})
   useEffect(() => {
     const newVisibleState = {...visibleState}
@@ -68,7 +91,7 @@ export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteB
     return submitBlog(...args)
   }
   return (
-    <div {...props}>
+    <div>
       {header}
       <div>
         {blogs.map(blog =>
@@ -86,6 +109,15 @@ export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteB
 
     </div>
   )
+}
+
+BlogList.propTypes = {
+  username: PropTypes.string,
+  header: PropTypes.element,
+  blogs: PropTypes.arrayOf(BlogType).isRequired,
+  submitBlog: PropTypes.func.isRequired,
+  likeBlog: PropTypes.func.isRequired,
+  deleteBlog: PropTypes.func.isRequired,
 }
 
 export default {Blog, BlogList}

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import PropTypes from 'prop-types'
+
 import './notification.css';
 
 const BaseNotification = ({ message, className }) => {
@@ -16,6 +18,14 @@ const BaseNotification = ({ message, className }) => {
 
 export const ShowNotification = ({ message }) => <BaseNotification className='notification-notice' message={message} />;
 export const ShowError = ({ message }) => <BaseNotification className='notification-error' message={message} />;
+
+ShowNotification.propTypes = {
+  message: PropTypes.string.isRequired
+}
+
+ShowError.propTypes = {
+  message: PropTypes.string.isRequired
+}
 
 export const useNotification = (timeout) => {
   timeout = typeof timeout === 'number' ? timeout : 5000;
@@ -51,5 +61,15 @@ export const NotificationCenter = ({ notifications }) => (
     )}
   </div>
 );
+
+const NotificationType = PropTypes.exact({
+  id: PropTypes.number.isRequired,
+  isError: PropTypes.bool,
+  msg: PropTypes.string.isRequired
+})
+
+NotificationCenter.propTypes = {
+  notifications: PropTypes.arrayOf(NotificationType).isRequired
+}
 
 export default { ShowNotification, ShowError, useNotification, NotificationCenter };
