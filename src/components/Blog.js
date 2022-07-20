@@ -28,7 +28,7 @@ const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
 
 )}
 
-const BlogForm = ({ submitBlog, ...prop }) => {
+const BlogForm = ({ submitBlog }) => {
   const submit = (event) => {
     event.preventDefault()
     const {title, author, url} = event.target
@@ -37,7 +37,7 @@ const BlogForm = ({ submitBlog, ...prop }) => {
   }
   const fieldRefs = [useRef(), useRef(), useRef()]
   return (
-    <div {...prop}>
+    <div>
       <form onSubmit={submit}>
         <TextField name='title' prompt='title: ' ref={fieldRefs[0]} />
         <TextField name='author' prompt='author: ' ref={fieldRefs[1]} />
@@ -50,7 +50,7 @@ const BlogForm = ({ submitBlog, ...prop }) => {
 
 
 
-export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteBlog, ...props}) => {
+export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteBlog}) => {
   const [visibleState, setVisibleState] = useState({})
   useEffect(() => {
     const newVisibleState = {...visibleState}
@@ -68,7 +68,7 @@ export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteB
     return submitBlog(...args)
   }
   return (
-    <div {...props}>
+    <div>
       {header}
       <div>
         {blogs.map(blog =>

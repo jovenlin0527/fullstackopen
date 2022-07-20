@@ -9,7 +9,7 @@ import loginService from './services/login'
 
 
 
-const LoginForm = ({ handleLogin, ...prop}) => {
+const LoginForm = ({ handleLogin }) => {
   if (typeof handleLogin !== 'function') {
     console.error(`
 This component requires an attribute 'handleLogin',
@@ -25,7 +25,7 @@ and then performs the login.
     fieldRefs.forEach(x => x.current.clear())
   }
   return (
-    <div {...prop}>
+    <div>
       <h2>log in to application</h2>
       <form onSubmit={submit}>
         <TextField name='username' prompt='username: ' ref={fieldRefs[0]}/>
@@ -144,14 +144,17 @@ const App = () => {
   return (
     <div>
       <NotificationCenter notifications={notifications} />
-      <LoginForm handleLogin={handleLogin} hidden={user != null}/>
-      <BlogList username={user?.username}
-                header={blogHeader}
-                submitBlog={submitBlog}
-                blogs={blogs}
-                hidden={user==null}
-                likeBlog={likeBlog}
-                deleteBlog={deleteBlog} />
+      <div hidden={user != null}>
+        <LoginForm handleLogin={handleLogin}/>
+      </div>
+      <div hidden={user == null}>
+        <BlogList username={user?.username}
+                  header={blogHeader}
+                  submitBlog={submitBlog}
+                  blogs={blogs}
+                  likeBlog={likeBlog}
+                  deleteBlog={deleteBlog} />
+      </div>
     </div>
   )
 }
