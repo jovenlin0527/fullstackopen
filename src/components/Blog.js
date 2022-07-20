@@ -1,7 +1,17 @@
 import {useState, useRef, useEffect} from 'react'
+import PropTypes from 'prop-types'
 
 import Togglable from './Togglable'
 import TextField from './TextField'
+
+const BlogType = PropTypes.exact({
+  title: PropTypes.string.isRequired,
+  author: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
+  likes: PropTypes.number.isRequired,
+  user: PropTypes.object.isRequired,
+  id: PropTypes.string.isRequired,
+})
 
 const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
   const blogstyle = {
@@ -25,8 +35,17 @@ const Blog = ({blog, visible, doShow, doHide, doLike, doDelete}) => {
     {deleteButton}
     </div>
   </div>
-
 )}
+
+Blog.propTypes = {
+  blog: BlogType,
+  visible: PropTypes.bool,
+  doShow: PropTypes.func.isRequired,
+  doHide: PropTypes.func.isRequired,
+  doLike: PropTypes.func.isRequired,
+  doDelete: PropTypes.func,
+}
+
 
 const BlogForm = ({ submitBlog }) => {
   const submit = (event) => {
@@ -46,6 +65,10 @@ const BlogForm = ({ submitBlog }) => {
       </form>
     </div>
   )
+}
+
+BlogForm.propTypes = {
+  submitBlog: PropTypes.func.isRequired,
 }
 
 
@@ -86,6 +109,15 @@ export const BlogList = ({username, header, blogs, submitBlog, likeBlog, deleteB
 
     </div>
   )
+}
+
+BlogList.propTypes = {
+  username: PropTypes.string,
+  header: PropTypes.element,
+  blogs: PropTypes.arrayOf(BlogType).isRequired,
+  submitBlog: PropTypes.func.isRequired,
+  likeBlog: PropTypes.func.isRequired,
+  deleteBlog: PropTypes.func.isRequired,
 }
 
 export default {Blog, BlogList}
