@@ -59,4 +59,13 @@ describe('test default', () => {
     expect(url).not.toBeVisible()
     expect(likes).not.toBeVisible()
   })
+
+  test('Like button works', async () => {
+    const user = userEvent.setup()
+    const { container } = blogComponent
+    let likeButton = container.querySelector('.likeBlog')
+    await user.click(likeButton)
+    await user.click(likeButton)
+    expect(doLike).toHaveBeenCalledTimes(2)
+  })
 })

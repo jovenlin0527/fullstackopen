@@ -33,7 +33,7 @@ export const Blog = ({ blog, doLike, doDelete }) => {
       <p> {blog.title} {blog.author} {toggleDetail}</p>
       <div style={{ display: detailVisible ? '' : 'none' }} >
         <p> {blog.url} </p>
-        <p> likes: {blog.likes} <button onClick={doLike}> like </button> </p>
+        <p> likes: {blog.likes} <button className='likeBlog' onClick={doLike}> like </button> </p>
         <p> {blog.user.name} </p>
         {deleteButton}
       </div>
