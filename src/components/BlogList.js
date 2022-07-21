@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import PropTypes from 'prop-types'
 
 import TextField from './TextField'
@@ -32,17 +32,6 @@ BlogForm.propTypes = {
 }
 
 const BlogList = ({ username, header, blogs, submitBlog, likeBlog, deleteBlog }) => {
-  const [visibleState, setVisibleState] = useState({})
-  useEffect(() => {
-    const newVisibleState = { ...visibleState }
-    for (const b of blogs) {
-      if (!(b.id in visibleState)) {
-        newVisibleState[b.id] = true
-      }
-    }
-    setVisibleState(newVisibleState)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blogs])
   const formRef = useRef()
   const submit = (...args) => {
     formRef.current.toggleVisibility()
@@ -53,9 +42,7 @@ const BlogList = ({ username, header, blogs, submitBlog, likeBlog, deleteBlog })
       {header}
       <div>
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} visible={visibleState[blog.id]}
-            doShow={() => setVisibleState({ ...visibleState, [blog.id]:true })}
-            doHide={() => setVisibleState({ ...visibleState, [blog.id]:false })}
+          <Blog key={blog.id} blog={blog}
             doLike={() => likeBlog(blog)}
             doDelete={ username === blog.user.username ? () => {deleteBlog(blog)} : null }
           />

@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 
 export const BlogType = PropTypes.exact({
@@ -10,7 +10,8 @@ export const BlogType = PropTypes.exact({
   id: PropTypes.string.isRequired,
 })
 
-export const Blog = ({ blog, visible, doShow, doHide, doLike, doDelete }) => {
+export const Blog = ({ blog, doLike, doDelete }) => {
+  const [detailVisible, setDetailVisible] = useState(false)
   const blogstyle = {
     paddingLeft: 2,
     border: 'solid',
@@ -18,14 +19,19 @@ export const Blog = ({ blog, visible, doShow, doHide, doLike, doDelete }) => {
     borderWidth: 1,
     marginBottom: '5px',
   }
-  const toggleVisible = visible
-    ? (<button onClick={doHide}>hide</button>)
-    : (<button onClick={doShow}>show</button>)
+
+  const doToggleDetail = () => setDetailVisible(!detailVisible)
+
+  const toggleDetail = (
+    <button className="toggleBlogDetail" onClick={doToggleDetail}>
+      {detailVisible ? 'hide' : 'show'}
+    </button>
+  )
   const deleteButton = (doDelete == null) ? null : (<p><button onClick={doDelete}> delete </button></p>)
   return (
     <div style={blogstyle}>
-      <p> {blog.title} {blog.author} {toggleVisible}</p>
-      <div style={{ display: visible ? '' : 'none' }} >
+      <p> {blog.title} {blog.author} {toggleDetail}</p>
+      <div style={{ display: detailVisible ? '' : 'none' }} >
         <p> {blog.url} </p>
         <p> likes: {blog.likes} <button onClick={doLike}> like </button> </p>
         <p> {blog.user.name} </p>
@@ -36,9 +42,6 @@ export const Blog = ({ blog, visible, doShow, doHide, doLike, doDelete }) => {
 
 Blog.propTypes = {
   blog: BlogType,
-  visible: PropTypes.bool,
-  doShow: PropTypes.func.isRequired,
-  doHide: PropTypes.func.isRequired,
   doLike: PropTypes.func.isRequired,
   doDelete: PropTypes.func,
 }
