@@ -1,5 +1,5 @@
 {
-  "name": "bloglist",
+  "name": "bloglist-backend",
   "version": "0.0.1",
   "description": "exercise for fullstackopen part 4",
   "main": "index.js",
