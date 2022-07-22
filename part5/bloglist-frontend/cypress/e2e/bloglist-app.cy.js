@@ -41,8 +41,14 @@ describe('Blog app', function () {
         expect(userData.token).to.be.a('string')
       })
 
+      cy.reload()
+      cy.contains('blogs')
+
       // logout
       cy.contains('Logout').click()
+      cy.get('.loginForm').should('be.visible')
+
+      cy.reload()
       cy.get('.loginForm').should('be.visible')
     })
 
@@ -59,6 +65,7 @@ describe('Blog app', function () {
   describe('When logged in', function () {
     beforeEach(function () {
       cy.login(user)
+      cy.wait('@loadBlogs')
     })
 
     it('A blog can be created', function () {
@@ -75,7 +82,8 @@ describe('Blog app', function () {
           cy.contains(blog.title)
           cy.contains(blog.author)
         })
-      cy.get('.blogItem').filter(`:contains(${blog.title})`)
+
+      cy.get(`.blogItem:contains(${blog.title})`).as('blogItem')
         .within(() => {
           cy.contains(blog.title)
           cy.contains(blog.author)
@@ -83,6 +91,12 @@ describe('Blog app', function () {
           cy.contains('show').click()
           cy.get('.blogItemDetail').should('be.visible')
         })
+
+      cy.reload()
+      cy.wait('@loadBlogs')
+      cy.get('@blogItem')
+        .contains(blog.title)
+        .contains(blog.author)
     })
 
     it('Can like a blog', function () {
