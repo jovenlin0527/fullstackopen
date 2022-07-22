@@ -105,7 +105,7 @@ const App = () => {
       setBlogs(blogs.filter(b => b.id !== blog.id))
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
-        pushError(`Can't delete ${blog.name}: ${error.message}`)
+        pushError(`Can't remove ${blog.name}: ${error.message}`)
       } else {
         pushError(`Unknown Error: ${error.message}`)
         throw error

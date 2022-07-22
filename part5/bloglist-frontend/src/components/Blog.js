@@ -27,7 +27,7 @@ export const Blog = ({ blog, doLike, doDelete }) => {
       {detailVisible ? 'hide' : 'show'}
     </button>
   )
-  const deleteButton = (doDelete == null) ? null : (<p><button onClick={doDelete}> delete </button></p>)
+  const deleteButton = (doDelete == null) ? null : (<p><button onClick={doDelete}> remove </button></p>)
   return (
     <div className='blogItem' style={blogstyle}>
       <p> {blog.title} {blog.author} {toggleDetail}</p>
