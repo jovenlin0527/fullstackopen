@@ -81,5 +81,41 @@ describe('Blog app', function () {
           cy.get('.blogItemDetail').should('be.visible')
         })
     })
+
+    it('Can like a blog', function () {
+      cy.createBlog(blog)
+      let likes = (blog.likes == null) ? 0 : blog.likes
+      cy.get('.blogItem').filter(`:contains(${blog.title})`)
+        .within(() => {
+          cy.get('button.likeBlog').should('not.be.visible')
+          cy.contains('show').click()
+
+          // Can read how many likes
+          cy.contains(/likes.*\d+/).invoke('text')
+            .then(s => {
+              const digits = s.match(/(\d+)/)[1]
+              expect(parseInt(digits)).to.equal(likes)
+            })
+
+          // Trying to click the button
+          cy.intercept({ method: 'PUT', url: 'http://localhost:3000/api/blogs/**' }).as('updateBlog')
+          cy.get('button.likeBlog').contains('like').click()
+          cy.wait('@updateBlog')
+
+          // likes is increased
+          cy.contains(/likes.*\d+/).invoke('text')
+            .then(s => {
+              const digits = s.match(/(\d+)/)[1]
+              expect(parseInt(digits)).to.equal(likes + 1)
+            })
+        })
+      cy.reload()
+      cy.get('.blogItem').filter(`:contains(${blog.title})`)
+        .contains(/likes.*\d+/).invoke('text')
+        .then(s => {
+          const digits = s.match(/(\d+)/)[1]
+          expect(parseInt(digits)).to.equal(likes + 1)
+        })
+    })
   })
 })

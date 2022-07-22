@@ -36,3 +36,19 @@ Cypress.Commands.add('login', ({ username, password }) => {
       cy.visit('http://localhost:3000')
     })
 })
+
+Cypress.Commands.add('createBlog', (blog) => {
+  const userInfo = localStorage.getItem('user')
+  if (userInfo == null) {
+    throw new Error('You need to login in order to create a blog!')
+  }
+  const { token } = JSON.parse(userInfo)
+  cy.request({
+    url: 'http://localhost:3003/api/blogs',
+    method: 'POST',
+    auth: {
+      'bearer': token
+    },
+    body: blog
+  })
+})
