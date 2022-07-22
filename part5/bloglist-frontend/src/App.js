@@ -103,6 +103,7 @@ const App = () => {
     try {
       await blogService.deleteBlog(blog.id)
       setBlogs(blogs.filter(b => b.id !== blog.id))
+      pushNotification(`Removed ${blog.title}`)
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
         pushError(`Can't remove ${blog.title}: ${error.message}`)

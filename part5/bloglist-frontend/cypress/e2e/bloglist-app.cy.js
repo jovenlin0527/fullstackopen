@@ -144,4 +144,51 @@ describe('Blog app', function () {
         .should(likes => expect(likes).to.equal(oldLikes + 1))
     })
   })
+
+  describe('Delete a blog', function () {
+    beforeEach(() => {
+      cy.login(user)
+      cy.createBlog(blog)
+      cy.wait('@loadBlogs')
+    })
+
+    it('succeeds if you are the owner', function () {
+      cy.intercept({ method: 'DELETE', url:'http://localhost:3000/api/blogs/**' }).as('deleteBlog')
+      cy.get(`.blogItem:contains('${blog.title}')`)
+        .as('blogItem')
+        .within(() => {
+          cy.contains('remove').should('not.be.visible')
+          cy.contains('show').click()
+          cy.on('window:confirm', text => {
+            expect(text).to.have.string('Remove')
+            expect(text).to.have.string(blog.title)
+            expect(text).to.have.string(blog.author)
+          })
+          cy.contains('remove').click()
+        })
+      cy.wait('@deleteBlog')
+      cy.contains(new RegExp(`Removed.*${blog.title}`))
+      cy.get('@blogItem').should('not.exist')
+      cy.reload()
+      cy.wait('@loadBlogs')
+      cy.get('@blogItem').should('not.exist')
+    })
+
+    it('fails if you are not the owner', function () {
+      const newUser = {
+        username: 'anotherUser',
+        name: 'anotherName',
+        password: 'password'
+      }
+      cy.createUser(newUser)
+      cy.login(newUser)
+      cy.wait('@loadBlogs')
+      cy.get(`.blogItem:contains('${blog.title}')`)
+        .within(() => {
+          cy.contains('remove').should('not.exist')
+          cy.contains('show').click()
+          cy.contains('remove').should('not.exist')
+        })
+    })
+  })
 })
