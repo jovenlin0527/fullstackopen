@@ -1,0 +1,9 @@
+{
+  "name": "fullstackopen-exercises",
+  "workspaces": [
+    "part1/*",
+    "part2/*",
+    "part4/*",
+    "part5/*"
+  ]
+}
