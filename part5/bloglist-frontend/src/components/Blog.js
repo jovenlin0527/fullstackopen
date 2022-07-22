@@ -29,9 +29,9 @@ export const Blog = ({ blog, doLike, doDelete }) => {
   )
   const deleteButton = (doDelete == null) ? null : (<p><button onClick={doDelete}> delete </button></p>)
   return (
-    <div style={blogstyle}>
+    <div className='blogItem' style={blogstyle}>
       <p> {blog.title} {blog.author} {toggleDetail}</p>
-      <div style={{ display: detailVisible ? '' : 'none' }} >
+      <div className='blogItemDetail' style={{ display: detailVisible ? '' : 'none' }} >
         <p> {blog.url} </p>
         <p> likes: {blog.likes} <button className='likeBlog' onClick={doLike}> like </button> </p>
         <p> {blog.user.name} </p>

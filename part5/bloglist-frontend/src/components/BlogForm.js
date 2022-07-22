@@ -14,10 +14,10 @@ const BlogForm = ({ submitBlog }) => {
   const fieldRefs = [useRef(), useRef(), useRef()]
   return (
     <div>
-      <form onSubmit={submit}>
-        <TextField name='title' prompt='title: ' ref={fieldRefs[0]} />
-        <TextField name='author' prompt='author: ' ref={fieldRefs[1]} />
-        <TextField name='url' prompt='url: ' ref={fieldRefs[2]} />
+      <form className='blogForm' onSubmit={submit}>
+        <TextField id='title' name='title' prompt='title: ' ref={fieldRefs[0]} />
+        <TextField id='author' name='author' prompt='author: ' ref={fieldRefs[1]} />
+        <TextField id='url' name='url' prompt='url: ' ref={fieldRefs[2]} />
         <input type='submit' />
       </form>
     </div>

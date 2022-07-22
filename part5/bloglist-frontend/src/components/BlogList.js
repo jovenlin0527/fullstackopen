@@ -14,7 +14,7 @@ const BlogList = ({ username, header, blogs, submitBlog, likeBlog, deleteBlog })
   return (
     <div>
       {header}
-      <div>
+      <div className='blogList'>
         {blogs.map(blog =>
           <Blog key={blog.id} blog={blog}
             doLike={() => likeBlog(blog)}
