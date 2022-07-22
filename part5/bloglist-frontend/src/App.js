@@ -28,8 +28,8 @@ and then performs the login.
     <div>
       <h2>log in to application</h2>
       <form className='loginForm' onSubmit={submit}>
-        <TextField name='username' prompt='username: ' ref={fieldRefs[0]}/>
-        <TextField name='password' prompt='pasword: ' type='password' ref={fieldRefs[1]}/>
+        <TextField id='username' name='username' prompt='username: ' ref={fieldRefs[0]}/>
+        <TextField id='password' name='password' prompt='pasword: ' type='password' ref={fieldRefs[1]}/>
         <input type='submit' />
       </form>
     </div>
