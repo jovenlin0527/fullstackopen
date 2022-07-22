@@ -103,39 +103,45 @@ describe('Blog app', function () {
       cy.createBlog(blog)
       cy.reload()
       cy.wait('@loadBlogs')
-      let likes = (blog.likes == null) ? 0 : blog.likes
-      cy.get('.blogItem').filter(`:contains(${blog.title})`)
+      let oldLikes = (blog.likes == null) ? 0 : blog.likes
+
+      // need to show details in order to like a blog
+      cy.get(`.blogItem:contains('${blog.title}')`)
+        .as('blogItem')
         .within(() => {
+          cy.contains(/likes.*\d+/).should('not.be.visible')
           cy.get('button.likeBlog').should('not.be.visible')
           cy.contains('show').click()
-
-          // Can read how many likes
-          cy.contains(/likes.*\d+/).invoke('text')
-            .then(s => {
-              const digits = s.match(/(\d+)/)[1]
-              expect(parseInt(digits)).to.equal(likes)
-            })
-
-          // Trying to click the button
-          cy.intercept({ method: 'PUT', url: 'http://localhost:3000/api/blogs/**' }).as('updateBlog')
-          cy.get('button.likeBlog').contains('like').click()
-          cy.wait('@updateBlog')
-
-          // likes is increased
-          cy.contains(/likes.*\d+/).invoke('text')
-            .then(s => {
-              const digits = s.match(/(\d+)/)[1]
-              expect(parseInt(digits)).to.equal(likes + 1)
-            })
+          cy.get('button.likeBlog').should('be.visible')
         })
+
+      const extractLikes = (elem) => {
+        const digits = elem.text().match(/(\d+)/)[1]
+        return parseInt(digits)
+      }
+
+      cy.get('@blogItem')
+        .then(extractLikes)
+        .should(likes => expect(likes).to.equal(oldLikes))
+
+      // Trying to click the button
+      cy.intercept({ method: 'PUT', url: 'http://localhost:3000/api/blogs/**' }).as('updateBlog')
+      cy.get('@blogItem')
+        .get('button.likeBlog').contains('like').click()
+      cy.wait('@updateBlog')
+
+      // likes is increased
+      cy.get('@blogItem')
+        .then(extractLikes)
+        .should(likes => expect(likes).to.equal(oldLikes + 1))
+
       cy.reload()
       cy.wait('@loadBlogs')
-      cy.get('.blogItem').filter(`:contains(${blog.title})`)
-        .contains(/likes.*\d+/).invoke('text')
-        .then(s => {
-          const digits = s.match(/(\d+)/)[1]
-          expect(parseInt(digits)).to.equal(likes + 1)
-        })
+      cy.get('@blogItem')
+        .contains('show').click()
+      cy.get('@blogItem')
+        .then(extractLikes)
+        .should(likes => expect(likes).to.equal(oldLikes + 1))
     })
   })
 })
