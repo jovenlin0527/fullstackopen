@@ -6,7 +6,6 @@ import TextField from './TextField'
 
 const BlogForm = ({ submitBlog }) => {
   const submit = (event) => {
-    console.log(event.target.children)
     event.preventDefault()
     const { title, author, url } = event.target.elements
     fieldRefs.forEach(x => x.current.clear())
