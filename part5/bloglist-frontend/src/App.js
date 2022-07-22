@@ -27,7 +27,7 @@ and then performs the login.
   return (
     <div>
       <h2>log in to application</h2>
-      <form onSubmit={submit}>
+      <form className='loginForm' onSubmit={submit}>
         <TextField name='username' prompt='username: ' ref={fieldRefs[0]}/>
         <TextField name='password' prompt='pasword: ' type='password' ref={fieldRefs[1]}/>
         <input type='submit' />
