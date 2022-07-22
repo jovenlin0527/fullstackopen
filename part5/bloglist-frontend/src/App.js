@@ -97,7 +97,7 @@ const App = () => {
   }
 
   const deleteBlog = async(blog) => {
-    if (!window.confirm(`Remove blog ${blog.name} by ${blog.author} ?`)){
+    if (!window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)){
       return
     }
     try {
