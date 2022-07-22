@@ -11,6 +11,11 @@ describe('Blog app', function () {
     url: 'blogUrl'
   }
 
+  const extractLikes = (elem) => {
+    const digits = elem.text().match(/(\d+)/)[1]
+    return parseInt(digits)
+  }
+
   beforeEach(function () {
     cy.request('POST', 'http://localhost:3003/api/testing/reset')
     cy.createUser(user)
@@ -115,11 +120,6 @@ describe('Blog app', function () {
           cy.get('button.likeBlog').should('be.visible')
         })
 
-      const extractLikes = (elem) => {
-        const digits = elem.text().match(/(\d+)/)[1]
-        return parseInt(digits)
-      }
-
       cy.get('@blogItem')
         .then(extractLikes)
         .should(likes => expect(likes).to.equal(oldLikes))
@@ -190,5 +190,28 @@ describe('Blog app', function () {
           cy.contains('remove').should('not.exist')
         })
     })
+  })
+
+  it('blog is sorted by likes', function () {
+    cy.login(user)
+    const blogNums = 5
+    const blogs = new Array(blogNums)
+    for (let i = 0; i < 5; i++) {
+      const newBlog = { ...blog, title:blog.title + i.toString() , likes: i * i }
+      blogs[i] = newBlog
+      cy.createBlog(newBlog)
+    }
+    blogs.sort((x, y) => y.likes - x.likes)
+    cy.wait('@loadBlogs')
+    cy.reload()
+    cy.wait('@loadBlogs')
+    const likes = new Array(5)
+    cy.get('.blogItem')
+      .as('blogList')
+      .each((val, idx) => {
+        expect(val).to.contain(blogs[idx].title)
+      })
+    console.log(likes)
+    expect(likes.every((val, idx) => idx + 1 === likes.length || val < likes[idx + 1]))
   })
 })
