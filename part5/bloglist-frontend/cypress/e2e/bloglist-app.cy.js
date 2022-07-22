@@ -10,10 +10,13 @@ describe('Blog app', function () {
     author: 'blogAuthor',
     url: 'blogUrl'
   }
+
   beforeEach(function () {
     cy.request('POST', 'http://localhost:3003/api/testing/reset')
     cy.createUser(user)
+    cy.intercept('GET', 'http://localhost:3000/api/blogs').as('loadBlogs')
     cy.visit('http://localhost:3000')
+    cy.wait('@loadBlogs')
   })
 
   it('Login is shown', function () {
@@ -84,6 +87,8 @@ describe('Blog app', function () {
 
     it('Can like a blog', function () {
       cy.createBlog(blog)
+      cy.reload()
+      cy.wait('@loadBlogs')
       let likes = (blog.likes == null) ? 0 : blog.likes
       cy.get('.blogItem').filter(`:contains(${blog.title})`)
         .within(() => {
@@ -110,6 +115,7 @@ describe('Blog app', function () {
             })
         })
       cy.reload()
+      cy.wait('@loadBlogs')
       cy.get('.blogItem').filter(`:contains(${blog.title})`)
         .contains(/likes.*\d+/).invoke('text')
         .then(s => {
