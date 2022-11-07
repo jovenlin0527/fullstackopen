@@ -5,6 +5,7 @@
     "part2/*",
     "part4/*",
     "part5/*",
+    "part6/*",
     "lecture/**"
   ]
 }
