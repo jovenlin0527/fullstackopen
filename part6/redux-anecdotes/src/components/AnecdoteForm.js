@@ -1,29 +1,25 @@
-import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 
-import { newAnecdote, setAnecdotes } from '../reducers/anecdoteReducer'
-import { pushNotification, popNotification } from '../reducers/notificationReducer'
 import anecdoteService from '../services/anecdotes'
+import { newAnecdote } from '../reducers/anecdoteReducer'
+import { pushNotification, popNotification } from '../reducers/notificationReducer'
 
 const AnecdoteForm = () => {
   const dispatch = useDispatch()
 
-  // initialize, only run once
-  useEffect(() => {
-  anecdoteService
-    .getAll()
-    .then(anecdotes => dispatch(setAnecdotes(anecdotes)))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-         // effects with [] dependency only run once
 
   const createAnecdote = (event) => {
     event.preventDefault()
     const content = event.target.content.value
     event.target.content.value = ''
-    dispatch(newAnecdote(content))
-    const msg = `You added ${content}`
-    const action = dispatch(pushNotification(msg))
-    setTimeout(() => dispatch(popNotification(action.payload)), 5000)
+    anecdoteService.newAnecdote(content)
+      .then(anecdote => {
+        const content = anecdote.content
+        dispatch(newAnecdote(anecdote))
+        const msg = `You added ${content}`
+        const notification = dispatch(pushNotification(msg)).payload
+        setTimeout(() => dispatch(popNotification(notification)), 5000)
+      })
   }
 
   return (
