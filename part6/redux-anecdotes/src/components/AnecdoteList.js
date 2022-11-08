@@ -4,7 +4,10 @@ import sortBy from 'lodash.sortby'
 import { voteId } from '../reducers/anecdoteReducer'
 
 const AnecdoteList = () => {
-  const anecdotes = useSelector(state => sortBy(state, o => -o.votes))
+  const anecdotes = useSelector(state => {
+    const anecdotes = state.anecdotes
+    return sortBy(anecdotes, o => -o.votes)}
+  )
   const dispatch = useDispatch()
   const vote = (id) => {
     dispatch(voteId(id))
