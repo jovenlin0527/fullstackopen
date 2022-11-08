@@ -1,7 +1,9 @@
 import { useSelector, useDispatch } from 'react-redux'
 import sortBy from 'lodash.sortby'
 
-import { voteId, newAnecdote } from './reducers/anecdoteReducer'
+import { voteId } from './reducers/anecdoteReducer'
+
+import AnecdoteForm from './components/AnecdoteForm'
 
 const App = () => {
   const anecdotes = useSelector(state => sortBy(state, o => -o.votes))
@@ -12,12 +14,6 @@ const App = () => {
     dispatch(voteId(id))
   }
 
-  const createAnecdote = (event) => {
-    event.preventDefault()
-    const content = event.target.content.value
-    event.target.content.value = ''
-    dispatch(newAnecdote(content))
-  }
 
   return (
     <div>
@@ -33,11 +29,7 @@ const App = () => {
           </div>
         </div>
       )}
-      <h2>create new</h2>
-      <form onSubmit={createAnecdote}>
-        <div><input name="content" /></div>
-        <button type="submit">create</button>
-      </form>
+      <AnecdoteForm />
     </div>
   )
 }
