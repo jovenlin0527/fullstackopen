@@ -1,9 +1,10 @@
 import { useSelector, useDispatch } from 'react-redux'
+import sortBy from 'lodash.sortby'
 
 import { voteId, newAnecdote } from './reducers/anecdoteReducer'
 
 const App = () => {
-  const anecdotes = useSelector(state => state)
+  const anecdotes = useSelector(state => sortBy(state, o => -o.votes))
   const dispatch = useDispatch()
 
   const vote = (id) => {
