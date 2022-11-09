@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import sortBy from 'lodash.sortby'
 
-import anecdoteService from '../services/anecdotes'
-import { setAnecdotes, voteId } from '../reducers/anecdoteReducer'
+import { voteId } from '../reducers/anecdoteReducer'
 import { pushNotification, popNotification } from '../reducers/notificationReducer'
 
 const AnecdoteItem = ({anecdote, vote}) => {
@@ -22,15 +20,6 @@ const AnecdoteItem = ({anecdote, vote}) => {
 
 const AnecdoteList = () => {
   const dispatch = useDispatch()
-
-  // initialize, only run once
-  useEffect(() => {
-  anecdoteService
-    .getAll()
-    .then(anecdotes => dispatch(setAnecdotes(anecdotes)))
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-         // effects with [] dependency only run once
-
   const anecdotes = useSelector(state => {
     const filter = state.filter
     const anecdotes = state.anecdotes.filter(a => a.content.includes(filter))
