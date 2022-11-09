@@ -1,6 +1,5 @@
 import { useDispatch } from 'react-redux'
 
-import anecdoteService from '../services/anecdotes'
 import { newAnecdote } from '../reducers/anecdoteReducer'
 import { pushNotification, popNotification } from '../reducers/notificationReducer'
 
@@ -12,14 +11,11 @@ const AnecdoteForm = () => {
     event.preventDefault()
     const content = event.target.content.value
     event.target.content.value = ''
-    anecdoteService.newAnecdote(content)
-      .then(anecdote => {
-        const content = anecdote.content
-        dispatch(newAnecdote(anecdote))
-        const msg = `You added ${content}`
-        const notification = dispatch(pushNotification(msg)).payload
-        setTimeout(() => dispatch(popNotification(notification)), 5000)
-      })
+    dispatch(newAnecdote(content))
+    // TODO: Is this suitable place for notification?
+    const msg = `You added ${content}`
+    const notification = dispatch(pushNotification(msg)).payload
+    setTimeout(() => dispatch(popNotification(notification)), 5000)
   }
 
   return (
