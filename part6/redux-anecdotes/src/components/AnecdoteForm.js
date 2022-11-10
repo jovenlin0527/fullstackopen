@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 
 import { newAnecdote } from '../reducers/anecdoteReducer'
-import { setNotification, clearNotification } from '../reducers/notificationReducer'
+import { sendNotification } from '../reducers/notificationReducer'
 
 const AnecdoteForm = () => {
   const dispatch = useDispatch()
@@ -11,10 +11,8 @@ const AnecdoteForm = () => {
     const content = event.target.content.value
     event.target.content.value = ''
     dispatch(newAnecdote(content))
-    // TODO: Is this suitable place for notification?
     const msg = `You added ${content}`
-    const notification = dispatch(setNotification(msg)).payload
-    setTimeout(() => dispatch(clearNotification(notification)), 5000)
+    dispatch(sendNotification(msg))
   }
 
   return (
@@ -26,7 +24,6 @@ const AnecdoteForm = () => {
       </form>
     </div>
   )
-
 }
 
 export default AnecdoteForm
