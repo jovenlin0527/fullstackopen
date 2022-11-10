@@ -12,7 +12,7 @@ const Notification = (prop) => {
   }
   return (
     <div style={style}>
-      { notification }
+      { notification.msg }
     </div>
   )
 }
