@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import sortBy from 'lodash.sortby'
 
 import { voteAnecdote } from '../reducers/anecdoteReducer'
-import { pushNotification, popNotification } from '../reducers/notificationReducer'
+import { setNotification, clearNotification } from '../reducers/notificationReducer'
 
 const AnecdoteItem = ({anecdote, vote}) => {
   return (
@@ -27,9 +27,9 @@ const AnecdoteList = () => {
   )
   const vote = (anecdote) => {
     dispatch(voteAnecdote(anecdote))
-    const notification = dispatch(pushNotification(`You voted for ${anecdote.content}`))
+    const notification = dispatch(setNotification(`You voted for ${anecdote.content}`))
     setTimeout(() => {
-      dispatch(popNotification(notification.payload))
+      dispatch(clearNotification(notification.payload))
     }, 5000)
   }
   return (

@@ -1,26 +1,20 @@
 import { useSelector } from 'react-redux'
 
-const NotificationItem = ({children}) => {
+const Notification = () => {
   const style = {
     border: 'solid',
     padding: 10,
     borderWidth: 1
   }
+  const notification = useSelector(s => s.notification)
+  if (notification == null) {
+    return null;
+  }
   return (
     <div style={style}>
-      { children }
+      { notification }
     </div>
   )
-}
-
-const Notification = () => {
-  const notification = useSelector(s => s.notification)
-  return (
-    notification.map(n => (
-      <NotificationItem key={n.id}> {n.text} </NotificationItem>
-    ))
-  )
-
 }
 
 export default Notification

@@ -1,31 +1,20 @@
-import { createSlice, nanoid } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
-const initialState = []
-
+const initialState = null
 
 const notificationSlice = createSlice({
   name: "notification",
   initialState,
   reducers: {
-    pushNotification: {
-      reducer: (state, action) => {
-        state.push(action.payload)
-      },
-      prepare: (text) => {
-        return {
-          payload: {
-            text,
-            id: nanoid()
-          }
-        }
-      }
+    setNotification(_state, action) {
+      return action.payload
     },
-    popNotification: (state, action) => {
-      return state.filter(n => n.id !== action.payload.id)
+    clearNotification(_state, _action) {
+      return null
     }
   }
 })
 
-export const { pushNotification, popNotification } = notificationSlice.actions
+export const { setNotification, clearNotification } = notificationSlice.actions
 
 export default notificationSlice.reducer
