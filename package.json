@@ -7,5 +7,8 @@
     "part5/*",
     "part6/*",
     "lecture/**"
-  ]
+  ],
+  "devDependencies": {
+    "create-react-app": "^5.0.1"
+  }
 }
