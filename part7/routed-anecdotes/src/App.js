@@ -1,5 +1,22 @@
 import { useState } from 'react'
-import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
+
+const Notification = (prop) => {
+  const style = {
+    border: 'solid',
+    padding: 10,
+    borderWidth: 1
+  }
+  const notification = prop.notification
+  if (notification == null) {
+    return null;
+  }
+  return (
+    <div style={style}>
+      { notification.msg }
+    </div>
+  )
+}
 
 const Menu = () => {
   const padding = {
@@ -50,6 +67,7 @@ const About = () => (
   </div>
 )
 
+
 const Footer = () => (
   <div>
     Anecdote app for <a href='https://fullstackopen.com/'>Full Stack Open</a>.
@@ -63,6 +81,7 @@ const CreateNew = (props) => {
   const [author, setAuthor] = useState('')
   const [info, setInfo] = useState('')
 
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -72,6 +91,7 @@ const CreateNew = (props) => {
       info,
       votes: 0
     })
+    navigate('/')
   }
 
   return (
@@ -115,12 +135,23 @@ const App = () => {
     }
   ])
 
-  const [notification, setNotification] = useState('')
+  const [notification, setNotification] = useState(null)
 
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
+    if (notification != null) {
+      clearTimeout(notification.timeoutId)
+    }
+    const timeoutId = setTimeout(() => {
+      setNotification(null)
+    }, 5000)
+    setNotification({
+      msg: `a new anecdote ${anecdote.content} created!`,
+      timeoutId
+    })
   }
+
 
   const anecdoteById = (id) =>
     anecdotes.find(a => a.id === id)
@@ -145,6 +176,7 @@ const App = () => {
     <div>
       <h1>Software anecdotes</h1>
       <Menu />
+      <Notification notification={notification} />
       <Routes>
         <Route path="/" element={ <AnecdoteList anecdotes={anecdotes} />} />
         <Route path="/about" element={ <About /> } />
