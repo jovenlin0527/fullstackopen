@@ -18,19 +18,28 @@ const useField = (type) => {
 const useResource = (baseUrl) => {
   const [resources, setResources] = useState([])
 
-  // ...
+  useEffect(() => {
+    if (resources.length === 0) {
+      const fetch = async () => {
+        const response = await axios.get(baseUrl)
+        setResources(response.data)
+      }
+      fetch()
+    }
+  }, [baseUrl, resources])
 
-  const create = (resource) => {
-    // ...
+  const create = async (data) => {
+    const response = await axios.post(baseUrl, data)
+    setResources(resources.concat(response.data))
   }
 
   const service = {
     create
   }
 
-  return [
-    resources, service
-  ]
+  const out = [ resources, service ]
+
+  return out
 }
 
 const App = () => {
