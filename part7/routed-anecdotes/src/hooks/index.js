@@ -5,10 +5,11 @@ export const useField = (type) => {
   const onChange = (event) => {
     setValue(event.target.value)
   }
-
-  return {
+  const fieldAttr = {
     type,
     value,
     onChange,
   }
+
+  return [fieldAttr, setValue]
 }
