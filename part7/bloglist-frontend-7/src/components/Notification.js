@@ -9,22 +9,22 @@ const BaseNotification = ({ message, className }) => {
     return null
   }
 
-  return (
-    <div className={className}>
-      {message}
-    </div>
-  )
+  return <div className={className}>{message}</div>
 }
 
-export const ShowNotification = ({ message }) => <BaseNotification className='notification-notice' message={message} />
-export const ShowError = ({ message }) => <BaseNotification className='notification-error' message={message} />
+export const ShowNotification = ({ message }) => (
+  <BaseNotification className="notification-notice" message={message} />
+)
+export const ShowError = ({ message }) => (
+  <BaseNotification className="notification-error" message={message} />
+)
 
 ShowNotification.propTypes = {
-  message: PropTypes.string.isRequired
+  message: PropTypes.string.isRequired,
 }
 
 ShowError.propTypes = {
-  message: PropTypes.string.isRequired
+  message: PropTypes.string.isRequired,
 }
 
 export const useNotification = (timeout) => {
@@ -38,38 +38,46 @@ export const useNotification = (timeout) => {
   }
   const pushImpl = (msg, isError) => {
     const newId = nextId()
-    setNotifications(notifications.concat({ msg, isError, id : newId }))
+    setNotifications(notifications.concat({ msg, isError, id: newId }))
     setTimeout(() => {
-      setNotifications(notifications => notifications.filter(n => n.id !== newId))
+      setNotifications((notifications) =>
+        notifications.filter((n) => n.id !== newId)
+      )
     }, timeout)
   }
 
-  const pushNotfication = msg => pushImpl(msg, false)
+  const pushNotfication = (msg) => pushImpl(msg, false)
 
-  const pushError = msg => pushImpl(msg, true)
+  const pushError = (msg) => pushImpl(msg, true)
 
   return [notifications, pushNotfication, pushError]
 }
 
 export const NotificationCenter = ({ notifications }) => (
   <div>
-    {notifications.map(n =>
+    {notifications.map((n) => (
       <BaseNotification
         key={n.id}
-        className = {n.isError ? 'notification-error' : 'notification-notice'}
-        message={n.msg} />
-    )}
+        className={n.isError ? 'notification-error' : 'notification-notice'}
+        message={n.msg}
+      />
+    ))}
   </div>
 )
 
 const NotificationType = PropTypes.exact({
   id: PropTypes.number.isRequired,
   isError: PropTypes.bool,
-  msg: PropTypes.string.isRequired
+  msg: PropTypes.string.isRequired,
 })
 
 NotificationCenter.propTypes = {
-  notifications: PropTypes.arrayOf(NotificationType).isRequired
+  notifications: PropTypes.arrayOf(NotificationType).isRequired,
 }
 
-export default { ShowNotification, ShowError, useNotification, NotificationCenter }
+export default {
+  ShowNotification,
+  ShowError,
+  useNotification,
+  NotificationCenter,
+}

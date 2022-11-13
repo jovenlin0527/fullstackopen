@@ -10,7 +10,7 @@ const blog = {
   author: 'TestBlogAuthor',
   url: 'TestBlogUrl',
   likes: 238,
-  user: { username: 'username' }
+  user: { username: 'username' },
 }
 describe('test default', () => {
   let blogComponent
@@ -18,13 +18,11 @@ describe('test default', () => {
   const doDelete = jest.fn()
   beforeEach(() => {
     blogComponent = render(
-      <Blog blog={blog}
-        doLike={doLike}
-        doDelete={doDelete}
-      />
+      <Blog blog={blog} doLike={doLike} doDelete={doDelete} />
     )
     blogComponent.queryTitle = () => blogComponent.queryByText(/TestBlogTitle/)
-    blogComponent.queryAuthor = () => blogComponent.queryByText(/TestBlogAuthor/)
+    blogComponent.queryAuthor = () =>
+      blogComponent.queryByText(/TestBlogAuthor/)
     blogComponent.queryUrl = () => blogComponent.queryByText(/TestBlogUrl/)
     blogComponent.queryLikes = () => blogComponent.queryByText(/likes.*238/)
   })

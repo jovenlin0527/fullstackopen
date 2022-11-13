@@ -8,7 +8,7 @@ import BlogForm from './BlogForm'
 let blogFormComponent
 let submitBlog = jest.fn()
 beforeEach(() => {
-  blogFormComponent = render( <BlogForm submitBlog={submitBlog} /> )
+  blogFormComponent = render(<BlogForm submitBlog={submitBlog} />)
 })
 
 test('can submit a blog', async () => {
@@ -20,10 +20,9 @@ test('can submit a blog', async () => {
   console.log(submit)
   const user = userEvent.setup()
   await user.type(titleField, 'myTitle'),
-  await user.type(urlField, 'myUrl'),
-  await user.type(authorField, 'myAuthor')
+    await user.type(urlField, 'myUrl'),
+    await user.type(authorField, 'myAuthor')
   console.log('before click')
   await user.click(submit)
   console.log('after click')
 })
-

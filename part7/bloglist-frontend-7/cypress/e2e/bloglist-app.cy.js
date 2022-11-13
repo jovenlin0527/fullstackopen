@@ -8,7 +8,7 @@ describe('Blog app', function () {
   const blog = {
     title: 'blogTitle',
     author: 'blogAuthor',
-    url: 'blogUrl'
+    url: 'blogUrl',
   }
 
   const extractLikes = (elem) => {
@@ -32,12 +32,12 @@ describe('Blog app', function () {
     it('succeeds with correct credentials', function () {
       cy.get('#username').type(user.username)
       cy.get('#password').type(user.password)
-      cy.get('.loginForm input[type=\'submit\']').click()
+      cy.get(".loginForm input[type='submit']").click()
       cy.contains('Login success') // notification
       cy.get('.loginForm').should('not.be.visible')
 
       cy.contains('blogs') // title
-      cy.window().then(window => {
+      cy.window().then((window) => {
         let userData = window.localStorage.getItem('user')
         expect(userData).to.be.a('string')
         userData = JSON.parse(userData)
@@ -60,7 +60,7 @@ describe('Blog app', function () {
     it('fails with wrong credentials', function () {
       cy.get('#username').type(user.username)
       cy.get('#password').type(user.password + 'abc')
-      cy.get('.loginForm input[type=\'submit\']').click()
+      cy.get(".loginForm input[type='submit']").click()
       cy.contains('Cannot login') // notification
         .should('have.css', 'color', 'rgb(255, 0, 0)')
       cy.get('.loginForm').should('be.visible')
@@ -80,7 +80,7 @@ describe('Blog app', function () {
       cy.get('.blogForm #title').type(blog.title)
       cy.get('.blogForm #author').type(blog.author)
       cy.get('.blogForm #url').type(blog.url)
-      cy.get('.blogForm input[type=\'submit\']').click()
+      cy.get(".blogForm input[type='submit']").click()
 
       cy.contains(/A new blog.*added/) // notification
         .within(() => {
@@ -88,7 +88,8 @@ describe('Blog app', function () {
           cy.contains(blog.author)
         })
 
-      cy.get(`.blogItem:contains(${blog.title})`).as('blogItem')
+      cy.get(`.blogItem:contains(${blog.title})`)
+        .as('blogItem')
         .within(() => {
           cy.contains(blog.title)
           cy.contains(blog.author)
@@ -99,16 +100,14 @@ describe('Blog app', function () {
 
       cy.reload()
       cy.wait('@loadBlogs')
-      cy.get('@blogItem')
-        .contains(blog.title)
-        .contains(blog.author)
+      cy.get('@blogItem').contains(blog.title).contains(blog.author)
     })
 
     it('Can like a blog', function () {
       cy.createBlog(blog)
       cy.reload()
       cy.wait('@loadBlogs')
-      let oldLikes = (blog.likes == null) ? 0 : blog.likes
+      let oldLikes = blog.likes == null ? 0 : blog.likes
 
       // need to show details in order to like a blog
       cy.get(`.blogItem:contains('${blog.title}')`)
@@ -122,26 +121,27 @@ describe('Blog app', function () {
 
       cy.get('@blogItem')
         .then(extractLikes)
-        .should(likes => expect(likes).to.equal(oldLikes))
+        .should((likes) => expect(likes).to.equal(oldLikes))
 
       // Trying to click the button
-      cy.intercept({ method: 'PUT', url: 'http://localhost:3000/api/blogs/**' }).as('updateBlog')
-      cy.get('@blogItem')
-        .get('button.likeBlog').contains('like').click()
+      cy.intercept({
+        method: 'PUT',
+        url: 'http://localhost:3000/api/blogs/**',
+      }).as('updateBlog')
+      cy.get('@blogItem').get('button.likeBlog').contains('like').click()
       cy.wait('@updateBlog')
 
       // likes is increased
       cy.get('@blogItem')
         .then(extractLikes)
-        .should(likes => expect(likes).to.equal(oldLikes + 1))
+        .should((likes) => expect(likes).to.equal(oldLikes + 1))
 
       cy.reload()
       cy.wait('@loadBlogs')
-      cy.get('@blogItem')
-        .contains('show').click()
+      cy.get('@blogItem').contains('show').click()
       cy.get('@blogItem')
         .then(extractLikes)
-        .should(likes => expect(likes).to.equal(oldLikes + 1))
+        .should((likes) => expect(likes).to.equal(oldLikes + 1))
     })
   })
 
@@ -153,13 +153,16 @@ describe('Blog app', function () {
     })
 
     it('succeeds if you are the owner', function () {
-      cy.intercept({ method: 'DELETE', url:'http://localhost:3000/api/blogs/**' }).as('deleteBlog')
+      cy.intercept({
+        method: 'DELETE',
+        url: 'http://localhost:3000/api/blogs/**',
+      }).as('deleteBlog')
       cy.get(`.blogItem:contains('${blog.title}')`)
         .as('blogItem')
         .within(() => {
           cy.contains('remove').should('not.be.visible')
           cy.contains('show').click()
-          cy.on('window:confirm', text => {
+          cy.on('window:confirm', (text) => {
             expect(text).to.have.string('Remove')
             expect(text).to.have.string(blog.title)
             expect(text).to.have.string(blog.author)
@@ -178,17 +181,16 @@ describe('Blog app', function () {
       const newUser = {
         username: 'anotherUser',
         name: 'anotherName',
-        password: 'password'
+        password: 'password',
       }
       cy.createUser(newUser)
       cy.login(newUser)
       cy.wait('@loadBlogs')
-      cy.get(`.blogItem:contains('${blog.title}')`)
-        .within(() => {
-          cy.contains('remove').should('not.exist')
-          cy.contains('show').click()
-          cy.contains('remove').should('not.exist')
-        })
+      cy.get(`.blogItem:contains('${blog.title}')`).within(() => {
+        cy.contains('remove').should('not.exist')
+        cy.contains('show').click()
+        cy.contains('remove').should('not.exist')
+      })
     })
   })
 
@@ -197,7 +199,11 @@ describe('Blog app', function () {
     const blogNums = 5
     const blogs = new Array(blogNums)
     for (let i = 0; i < 5; i++) {
-      const newBlog = { ...blog, title:blog.title + i.toString() , likes: i * i }
+      const newBlog = {
+        ...blog,
+        title: blog.title + i.toString(),
+        likes: i * i,
+      }
       blogs[i] = newBlog
       cy.createBlog(newBlog)
     }
@@ -212,6 +218,10 @@ describe('Blog app', function () {
         expect(val).to.contain(blogs[idx].title)
       })
     console.log(likes)
-    expect(likes.every((val, idx) => idx + 1 === likes.length || val < likes[idx + 1]))
+    expect(
+      likes.every(
+        (val, idx) => idx + 1 === likes.length || val < likes[idx + 1]
+      )
+    )
   })
 })

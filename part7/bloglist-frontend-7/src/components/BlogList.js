@@ -5,7 +5,14 @@ import Togglable from './Togglable'
 import Blog, { BlogType } from './Blog'
 import BlogForm from './BlogForm'
 
-const BlogList = ({ username, header, blogs, submitBlog, likeBlog, deleteBlog }) => {
+const BlogList = ({
+  username,
+  header,
+  blogs,
+  submitBlog,
+  likeBlog,
+  deleteBlog,
+}) => {
   const formRef = useRef()
   const submit = (...args) => {
     formRef.current.toggleVisibility()
@@ -14,18 +21,29 @@ const BlogList = ({ username, header, blogs, submitBlog, likeBlog, deleteBlog })
   return (
     <div>
       {header}
-      <div className='blogList'>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog}
+      <div className="blogList">
+        {blogs.map((blog) => (
+          <Blog
+            key={blog.id}
+            blog={blog}
             doLike={() => likeBlog(blog)}
-            doDelete={ username === blog.user.username ? () => {deleteBlog(blog)} : null }
+            doDelete={
+              username === blog.user.username
+                ? () => {
+                    deleteBlog(blog)
+                  }
+                : null
+            }
           />
-        )}
+        ))}
       </div>
-      <Togglable buttonLabel="create new blog" ref={formRef} style={{ border:'solid', borderRadius:'15px', padding:'5px' }}>
-        <BlogForm submitBlog={submit}/>
+      <Togglable
+        buttonLabel="create new blog"
+        ref={formRef}
+        style={{ border: 'solid', borderRadius: '15px', padding: '5px' }}
+      >
+        <BlogForm submitBlog={submit} />
       </Togglable>
-
     </div>
   )
 }

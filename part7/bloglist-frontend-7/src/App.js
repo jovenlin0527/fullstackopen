@@ -7,8 +7,6 @@ import { useNotification, NotificationCenter } from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
-
-
 const LoginForm = ({ handleLogin }) => {
   if (typeof handleLogin !== 'function') {
     console.error(`
@@ -22,15 +20,26 @@ and then performs the login.
     event.preventDefault()
     const { username, password } = event.target
     handleLogin(username.value, password.value)
-    fieldRefs.forEach(x => x.current.clear())
+    fieldRefs.forEach((x) => x.current.clear())
   }
   return (
     <div>
       <h2>log in to application</h2>
-      <form className='loginForm' onSubmit={submit}>
-        <TextField id='username' name='username' prompt='username: ' ref={fieldRefs[0]}/>
-        <TextField id='password' name='password' prompt='pasword: ' type='password' ref={fieldRefs[1]}/>
-        <input type='submit' />
+      <form className="loginForm" onSubmit={submit}>
+        <TextField
+          id="username"
+          name="username"
+          prompt="username: "
+          ref={fieldRefs[0]}
+        />
+        <TextField
+          id="password"
+          name="password"
+          prompt="pasword: "
+          type="password"
+          ref={fieldRefs[1]}
+        />
+        <input type="submit" />
       </form>
     </div>
   )
@@ -38,7 +47,9 @@ and then performs the login.
 
 const App = () => {
   const [blogs, _setBlogs] = useState([])
-  const [user, setUser] = useState(JSON.parse(window.localStorage.getItem('user')))
+  const [user, setUser] = useState(
+    JSON.parse(window.localStorage.getItem('user'))
+  )
   const [notifications, pushNotification, pushError] = useNotification()
 
   const setBlogs = (blogs) => {
@@ -47,9 +58,7 @@ const App = () => {
   }
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )
+    blogService.getAll().then((blogs) => setBlogs(blogs))
   }, [])
 
   useEffect(() => {
@@ -85,7 +94,7 @@ const App = () => {
     try {
       const newBlog = { ...blog, likes: blog.likes + 1 }
       await blogService.put(blog.id, newBlog)
-      setBlogs(blogs.map(b => b.id === newBlog.id ? newBlog : b))
+      setBlogs(blogs.map((b) => (b.id === newBlog.id ? newBlog : b)))
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
         pushError(`Can't like ${blog.name}: ${error.message}`)
@@ -96,13 +105,13 @@ const App = () => {
     }
   }
 
-  const deleteBlog = async(blog) => {
-    if (!window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)){
+  const deleteBlog = async (blog) => {
+    if (!window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)) {
       return
     }
     try {
       await blogService.deleteBlog(blog.id)
-      setBlogs(blogs.filter(b => b.id !== blog.id))
+      setBlogs(blogs.filter((b) => b.id !== blog.id))
       pushNotification(`Removed ${blog.title}`)
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
@@ -111,7 +120,6 @@ const App = () => {
         pushError(`Unknown Error: ${error.message}`)
         throw error
       }
-
     }
   }
 
@@ -146,15 +154,17 @@ const App = () => {
     <div>
       <NotificationCenter notifications={notifications} />
       <div hidden={user != null}>
-        <LoginForm handleLogin={handleLogin}/>
+        <LoginForm handleLogin={handleLogin} />
       </div>
       <div hidden={user == null}>
-        <BlogList username={user == null ? null : user.username}
+        <BlogList
+          username={user == null ? null : user.username}
           header={blogHeader}
           submitBlog={submitBlog}
           blogs={blogs}
           likeBlog={likeBlog}
-          deleteBlog={deleteBlog} />
+          deleteBlog={deleteBlog}
+        />
       </div>
     </div>
   )

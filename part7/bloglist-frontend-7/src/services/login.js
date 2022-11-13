@@ -1,20 +1,18 @@
 import axios from 'axios'
 const baseUrl = '/api/login'
 
-export class BadLogin extends Error {
-}
+export class BadLogin extends Error {}
 
 export class UnexpectedResponseError extends Error {
   constructor(error, ...args) {
     super(`unexpected HTTP ${error.status} response :` + error.data, ...args)
   }
-
 }
 
 export const login = async (credentials) => {
   try {
     const response = await axios.post(baseUrl, credentials)
-    if (response.status !== 200){
+    if (response.status !== 200) {
       throw new UnexpectedResponseError(response)
     }
     const data = response.data
