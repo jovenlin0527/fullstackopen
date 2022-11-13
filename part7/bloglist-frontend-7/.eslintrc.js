@@ -21,10 +21,7 @@ module.exports = {
       "react", "jest", "react-hooks", "cypress"
   ],
   "rules": {
-      "indent": [
-          "error",
-          2  
-      ],
+      "indent": "off",
       "linebreak-style": [
           "error",
           "unix"
