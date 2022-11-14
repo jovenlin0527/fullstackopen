@@ -33,8 +33,11 @@ describe('Blog app', function () {
       cy.get('#username').type(user.username)
       cy.get('#password').type(user.password)
       cy.get(".loginForm input[type='submit']").click()
-      cy.contains('Login success') // notification
+      cy.get('[data-testid="notificationItem"]').contains('Login success')
       cy.get('.loginForm').should('not.be.visible')
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
 
       cy.contains('blogs') // title
       cy.window().then((window) => {
@@ -61,9 +64,13 @@ describe('Blog app', function () {
       cy.get('#username').type(user.username)
       cy.get('#password').type(user.password + 'abc')
       cy.get(".loginForm input[type='submit']").click()
-      cy.contains('Cannot login') // notification
+      cy.get('[data-testid="notificationItem"]')
+        .contains('Cannot login')
         .should('have.css', 'color', 'rgb(255, 0, 0)')
       cy.get('.loginForm').should('be.visible')
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
     })
   })
 
@@ -82,11 +89,10 @@ describe('Blog app', function () {
       cy.get('.blogForm #url').type(blog.url)
       cy.get(".blogForm input[type='submit']").click()
 
-      cy.contains(/A new blog.*added/) // notification
-        .within(() => {
-          cy.contains(blog.title)
-          cy.contains(blog.author)
-        })
+      cy.get('[data-testid="notificationItem"]').within(() => {
+        cy.contains(blog.title)
+        cy.contains(blog.author)
+      })
 
       cy.get(`.blogItem:contains(${blog.title})`)
         .as('blogItem')
@@ -97,6 +103,9 @@ describe('Blog app', function () {
           cy.contains('show').click()
           cy.get('.blogItemDetail').should('be.visible')
         })
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
 
       cy.reload()
       cy.wait('@loadBlogs')
@@ -170,11 +179,16 @@ describe('Blog app', function () {
           cy.contains('remove').click()
         })
       cy.wait('@deleteBlog')
-      cy.contains(new RegExp(`Removed.*${blog.title}`))
+      cy.get('[data-testid="notificationItem"]').contains(
+        new RegExp(`Removed.*${blog.title}`)
+      )
       cy.get('@blogItem').should('not.exist')
       cy.reload()
       cy.wait('@loadBlogs')
       cy.get('@blogItem').should('not.exist')
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
     })
 
     it('fails if you are not the owner', function () {

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
+import { useDispatch } from 'react-redux'
 
 import BlogList from './components/BlogList'
 import TextField from './components/TextField'
-import { useNotification, NotificationCenter } from './components/Notification'
+import { NotificationCenter } from './components/Notification'
+import { notify, notifyError } from './reducers/notificationReducer'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -46,11 +48,11 @@ and then performs the login.
 }
 
 const App = () => {
+  const dispatch = useDispatch()
   const [blogs, _setBlogs] = useState([])
   const [user, setUser] = useState(
     JSON.parse(window.localStorage.getItem('user'))
   )
-  const [notifications, pushNotification, pushError] = useNotification()
 
   const setBlogs = (blogs) => {
     blogs.sort((l, r) => r.likes - l.likes)
@@ -79,12 +81,12 @@ const App = () => {
     try {
       const blog = await blogService.post({ title, author, url, likes: 0 })
       setBlogs(blogs.concat(blog))
-      pushNotification(`A new blog ${title} by ${author} is added`)
+      dispatch(notify(`A new blog ${title} by ${author} is added`))
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
-        pushError(error.message)
+        dispatch(notifyError(error.message))
       } else {
-        pushError(`Unknown error: ${error.message}`)
+        dispatch(notifyError(`Unknown error: ${error.message}`))
         throw error
       }
     }
@@ -97,9 +99,9 @@ const App = () => {
       setBlogs(blogs.map((b) => (b.id === newBlog.id ? newBlog : b)))
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
-        pushError(`Can't like ${blog.name}: ${error.message}`)
+        dispatch(notifyError(`Can't like ${blog.name}: ${error.message}`))
       } else {
-        pushError(`Unknown Error: ${error.message}`)
+        dispatch(notifyError(`Unknown Error: ${error.message}`))
         throw error
       }
     }
@@ -112,12 +114,12 @@ const App = () => {
     try {
       await blogService.deleteBlog(blog.id)
       setBlogs(blogs.filter((b) => b.id !== blog.id))
-      pushNotification(`Removed ${blog.title}`)
+      dispatch(notify(`Removed ${blog.title}`))
     } catch (error) {
       if (error instanceof blogService.BlogServiceError) {
-        pushError(`Can't remove ${blog.title}: ${error.message}`)
+        dispatch(notifyError(`Can't remove ${blog.title}: ${error.message}`))
       } else {
-        pushError(`Unknown Error: ${error.message}`)
+        dispatch(notifyError(`Unknown Error: ${error.message}`))
         throw error
       }
     }
@@ -127,11 +129,11 @@ const App = () => {
     try {
       const user = await loginService.login({ username, password })
       blogService.setToken(user.token)
-      pushNotification(`Login success! Hello ${user.name}`)
+      dispatch(notify(`Login success! Hello ${user.name}`))
       login(user)
     } catch (error) {
       if (error instanceof loginService.BadLogin) {
-        pushError(error.message)
+        dispatch(notifyError(error.message))
       } else {
         throw error // unexcpected error
       }
@@ -139,7 +141,7 @@ const App = () => {
   }
   const handleLogout = () => {
     logout()
-    pushNotification('Logout success!')
+    dispatch(notify('Logout success!'))
   }
   const blogHeader = user && (
     <div>
@@ -152,7 +154,7 @@ const App = () => {
 
   return (
     <div>
-      <NotificationCenter notifications={notifications} />
+      <NotificationCenter />
       <div hidden={user != null}>
         <LoginForm handleLogin={handleLogin} />
       </div>
