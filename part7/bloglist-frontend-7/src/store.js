@@ -9,7 +9,12 @@ import notificationReducer, {
   notifyError,
 } from './reducers/notificationReducer'
 import loginReducer, { login, logout, setUser } from './reducers/loginReducer'
-import blogsReducer from './reducers/blogsReducer'
+
+import blogsReducer, {
+  submitBlog,
+  deleteBlog,
+  blogsSelector,
+} from './reducers/blogsReducer'
 
 import blogService from './services/blogs'
 
@@ -53,6 +58,33 @@ listeningMiddleware.startListening({
     window.localStorage.removeItem('user')
     blogService.token = null
     dispatch(notify('Logout success!'))
+  },
+})
+
+listeningMiddleware.startListening({
+  actionCreator: submitBlog.fulfilled,
+  effect: (action, { dispatch }) => {
+    const { title, author } = action.payload
+    dispatch(notify(`A new blog ${title} by ${author} is added`))
+  },
+})
+
+listeningMiddleware.startListening({
+  actionCreator: submitBlog.rejected,
+  effect: (action, { dispatch }) => {
+    const error = action.error
+    dispatch(notifyError(error.message))
+  },
+})
+
+listeningMiddleware.startListening({
+  actionCreator: deleteBlog.fulfilled,
+  effect: (action, { dispatch, getOriginalState }) => {
+    const deletedId = action.payload
+    const oldBlog = blogsSelector(getOriginalState()).find(
+      ({ id }) => id === deletedId
+    )
+    dispatch(notify(`Removed ${oldBlog.title}`))
   },
 })
 

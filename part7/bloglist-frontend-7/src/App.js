@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import sortBy from 'lodash.sortby'
 
 import BlogList from './components/BlogList'
 import TextField, { useField } from './components/TextField'
 import { NotificationCenter } from './components/Notification'
-import { notify, notifyError } from './reducers/notificationReducer'
+import { notifyError } from './reducers/notificationReducer'
 import { setUser, login, logout, loginSelector } from './reducers/loginReducer'
+import {
+  setBlogs as setBlogsAction,
+  getBlogs,
+  submitBlog as submitBlogAction,
+  deleteBlog as deleteBlogAction,
+  blogsSelector,
+} from './reducers/blogsReducer'
 
 import blogService from './services/blogs'
 
@@ -53,35 +61,23 @@ const App = () => {
     }
   }, [])
 
-  const [blogs, _setBlogs] = useState([])
-  const user = useSelector(loginSelector)
-
-  const setBlogs = (blogs) => {
-    blogs.sort((l, r) => r.likes - l.likes)
-    _setBlogs(blogs)
-  }
-
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs))
+    dispatch(getBlogs())
   }, [])
 
-  useEffect(() => {
-    blogService.setToken(user && user.token)
-  }, [user])
+  const user = useSelector(loginSelector)
+  const blogs = useSelector((s) => {
+    let blogs = blogsSelector(s)
+    return sortBy(blogs, (b) => -b.likes)
+  })
 
-  const submitBlog = async ({ title, url, author }) => {
-    try {
-      const blog = await blogService.post({ title, author, url, likes: 0 })
-      setBlogs(blogs.concat(blog))
-      dispatch(notify(`A new blog ${title} by ${author} is added`))
-    } catch (error) {
-      if (error instanceof blogService.BlogServiceError) {
-        dispatch(notifyError(error.message))
-      } else {
-        dispatch(notifyError(`Unknown error: ${error.message}`))
-        throw error
-      }
-    }
+  const submitBlog = (blog) => {
+    console.log('submitting', blog)
+    dispatch(submitBlogAction(blog))
+  }
+
+  const setBlogs = (blogs) => {
+    dispatch(setBlogsAction(blogs))
   }
 
   const likeBlog = async (blog) => {
@@ -99,22 +95,11 @@ const App = () => {
     }
   }
 
-  const deleteBlog = async (blog) => {
+  const deleteBlog = (blog) => {
     if (!window.confirm(`Remove blog ${blog.title} by ${blog.author} ?`)) {
       return
     }
-    try {
-      await blogService.deleteBlog(blog.id)
-      setBlogs(blogs.filter((b) => b.id !== blog.id))
-      dispatch(notify(`Removed ${blog.title}`))
-    } catch (error) {
-      if (error instanceof blogService.BlogServiceError) {
-        dispatch(notifyError(`Can't remove ${blog.title}: ${error.message}`))
-      } else {
-        dispatch(notifyError(`Unknown Error: ${error.message}`))
-        throw error
-      }
-    }
+    dispatch(deleteBlogAction(blog.id))
   }
 
   const handleLogout = () => {
