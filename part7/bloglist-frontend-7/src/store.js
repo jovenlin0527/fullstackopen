@@ -8,7 +8,7 @@ import notificationReducer, {
   notify,
   notifyError,
 } from './reducers/notificationReducer'
-import loginReducer, { login, logout, setUser } from './reducers/loginReducer'
+import loginReducer, { login, setUser } from './reducers/loginReducer'
 
 import blogsReducer, {
   submitBlog,
@@ -30,7 +30,12 @@ listeningMiddleware.startListening({
   actionCreator: setUser,
   effect: (action) => {
     let user = action.payload
-    blogService.setToken(user.token)
+    if (user != null) {
+      window.localStorage.setItem('user', JSON.stringify(user))
+    } else {
+      window.localStorage.removeItem('user')
+    }
+    blogService.setToken(user?.token)
   },
 })
 
@@ -38,8 +43,6 @@ listeningMiddleware.startListening({
   actionCreator: login.fulfilled,
   effect: (action, { dispatch }) => {
     let user = action.payload
-    window.localStorage.setItem('user', JSON.stringify(user))
-    blogService.setToken(user.token)
     dispatch(notify(`Login success! Hello ${user.name}`))
   },
 })
@@ -53,10 +56,8 @@ listeningMiddleware.startListening({
 })
 
 listeningMiddleware.startListening({
-  actionCreator: logout,
+  type: 'login/logout',
   effect: (_action, { dispatch }) => {
-    window.localStorage.removeItem('user')
-    blogService.token = null
     dispatch(notify('Logout success!'))
   },
 })
