@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import BlogList from './components/BlogList'
-import TextField from './components/TextField'
+import TextField, { useField } from './components/TextField'
 import { NotificationCenter } from './components/Notification'
 import { notify, notifyError } from './reducers/notificationReducer'
 import { setUser, login, logout, loginSelector } from './reducers/loginReducer'
@@ -11,12 +11,14 @@ import blogService from './services/blogs'
 
 const LoginForm = () => {
   const dispatch = useDispatch()
-  const fieldRefs = [useRef(), useRef()]
+  const [username, setUsername] = useField()
+  const [password, setPassword] = useField({ type: 'password' })
   const submit = (event) => {
     event.preventDefault()
     const { username, password } = event.target
     dispatch(login({ username: username.value, password: password.value }))
-    fieldRefs.forEach((x) => x.current.clear())
+    setUsername('')
+    setPassword('')
   }
   return (
     <div>
@@ -26,14 +28,14 @@ const LoginForm = () => {
           id="username"
           name="username"
           prompt="username: "
-          ref={fieldRefs[0]}
+          {...username}
         />
         <TextField
           id="password"
           name="password"
           prompt="pasword: "
           type="password"
-          ref={fieldRefs[1]}
+          {...password}
         />
         <input type="submit" />
       </form>

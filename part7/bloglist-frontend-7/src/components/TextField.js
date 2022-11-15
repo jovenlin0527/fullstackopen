@@ -1,30 +1,43 @@
-import { forwardRef, useState, useImperativeHandle } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 
-const TextField = forwardRef(({ id, name, prompt, type }, refs) => {
-  const [text, setText] = useState('')
+export const useField = ({ oldProps } = {}) => {
+  const [value, setValue] = useState('')
+  const onChange = (event) => {
+    setValue(event.target.value)
+  }
+  const props = {
+    ...oldProps,
+    onChange,
+    value,
+  }
+  return [props, setValue]
+}
+
+const TextField = ({ id, name, prompt, type, value, onChange }) => {
   type = type != null ? type : 'text'
   id = id != null ? id : name + '_id'
-  const update = (event) => {
-    setText(event.target.value)
-  }
-
-  useImperativeHandle(refs, () => {
-    return { clear: () => setText('') }
-  })
   return (
     <div>
       <label htmlFor={id}>{prompt}</label>
-      <input id={id} name={name} value={text} onChange={update} type={type} />
+      <input
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        type={type}
+      />
     </div>
   )
-})
+}
 
-TextField.propType = {
+TextField.propTypes = {
   name: PropTypes.string.isRequired,
   id: PropTypes.string,
   type: PropTypes.string,
   prompt: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
 }
 
 TextField.displayName = 'TextField'
