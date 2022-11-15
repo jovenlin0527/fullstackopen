@@ -1,27 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import BlogList from './components/BlogList'
 import TextField from './components/TextField'
 import { NotificationCenter } from './components/Notification'
 import { notify, notifyError } from './reducers/notificationReducer'
+import { setUser, login, logout, loginSelector } from './reducers/loginReducer'
 
 import blogService from './services/blogs'
-import loginService from './services/login'
 
-const LoginForm = ({ handleLogin }) => {
-  if (typeof handleLogin !== 'function') {
-    console.error(`
-This component requires an attribute 'handleLogin',
-which is a function that takes a username and a password,
-and then performs the login.
-`)
-  }
+const LoginForm = () => {
+  const dispatch = useDispatch()
   const fieldRefs = [useRef(), useRef()]
   const submit = (event) => {
     event.preventDefault()
     const { username, password } = event.target
-    handleLogin(username.value, password.value)
+    dispatch(login({ username: username.value, password: password.value }))
     fieldRefs.forEach((x) => x.current.clear())
   }
   return (
@@ -49,10 +43,16 @@ and then performs the login.
 
 const App = () => {
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    const user = JSON.parse(window.localStorage.getItem('user'))
+    if (user != null) {
+      dispatch(setUser(user))
+    }
+  }, [])
+
   const [blogs, _setBlogs] = useState([])
-  const [user, setUser] = useState(
-    JSON.parse(window.localStorage.getItem('user'))
-  )
+  const user = useSelector(loginSelector)
 
   const setBlogs = (blogs) => {
     blogs.sort((l, r) => r.likes - l.likes)
@@ -66,16 +66,6 @@ const App = () => {
   useEffect(() => {
     blogService.setToken(user && user.token)
   }, [user])
-
-  const login = (user) => {
-    setUser(user)
-    window.localStorage.setItem('user', JSON.stringify(user))
-  }
-
-  const logout = () => {
-    setUser(null)
-    window.localStorage.removeItem('user')
-  }
 
   const submitBlog = async ({ title, url, author }) => {
     try {
@@ -125,24 +115,10 @@ const App = () => {
     }
   }
 
-  const handleLogin = async (username, password) => {
-    try {
-      const user = await loginService.login({ username, password })
-      blogService.setToken(user.token)
-      dispatch(notify(`Login success! Hello ${user.name}`))
-      login(user)
-    } catch (error) {
-      if (error instanceof loginService.BadLogin) {
-        dispatch(notifyError(error.message))
-      } else {
-        throw error // unexcpected error
-      }
-    }
-  }
   const handleLogout = () => {
-    logout()
-    dispatch(notify('Logout success!'))
+    dispatch(logout())
   }
+
   const blogHeader = user && (
     <div>
       <h2>blogs</h2>
@@ -156,7 +132,7 @@ const App = () => {
     <div>
       <NotificationCenter />
       <div hidden={user != null}>
-        <LoginForm handleLogin={handleLogin} />
+        <LoginForm />
       </div>
       <div hidden={user == null}>
         <BlogList
