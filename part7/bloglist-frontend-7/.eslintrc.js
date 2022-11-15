@@ -41,6 +41,16 @@ module.exports = {
       "error",
       "smart"
     ],
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_.*",
+        "argsIgnorePattern": "^_.*",
+
+      }
+
+    ],
       "no-trailing-spaces": "error",
       "object-curly-spacing": [
           "error", "always"
