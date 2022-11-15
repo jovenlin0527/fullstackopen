@@ -29,6 +29,7 @@ const notifyImpl = (msg, timeout, isError) => {
 }
 
 export const notify = (msg, timeout = 5000) => notifyImpl(msg, timeout, false)
-export const notifyError = (msg, timeout = 5000) => notifyImpl(msg, timeout, true)
+export const notifyError = (msg, timeout = 5000) =>
+  notifyImpl(msg, timeout, true)
 export const selectNotifications = (state) => state.notification
 export default notificationSlice.reducer

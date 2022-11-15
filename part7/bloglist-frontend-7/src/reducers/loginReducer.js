@@ -21,7 +21,7 @@ const loginSlice = createSlice({
     },
     logout: (_state, _action) => {
       return null
-    }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (_state, action) => {

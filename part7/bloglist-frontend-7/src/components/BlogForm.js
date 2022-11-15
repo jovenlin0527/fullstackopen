@@ -21,19 +21,9 @@ const BlogForm = ({ submitBlog }) => {
   return (
     <div>
       <form className="blogForm" onSubmit={submit}>
-        <TextField
-          id="title"
-          name="title"
-          prompt="title: "
-          {...title}
-        />
-        <TextField
-          id="author"
-          name="author"
-          prompt="author: "
-          {...author}
-        />
-        <TextField id="url" name="url" prompt="url: " {...url}/>
+        <TextField id="title" name="title" prompt="title: " {...title} />
+        <TextField id="author" name="author" prompt="author: " {...author} />
+        <TextField id="url" name="url" prompt="url: " {...url} />
         <input type="submit" />
       </form>
     </div>

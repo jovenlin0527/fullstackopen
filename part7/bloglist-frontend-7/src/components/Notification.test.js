@@ -61,4 +61,3 @@ describe('Display dispatched notifications', () => {
     expect(screen.queryByText('hi')).toBeNull()
   })
 })
-
