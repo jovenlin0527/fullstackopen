@@ -9,10 +9,12 @@ import notificationReducer, {
   notifyError,
 } from './reducers/notificationReducer'
 import loginReducer, { login, logout, setUser } from './reducers/loginReducer'
+import blogsReducer from './reducers/blogsReducer'
 
 import blogService from './services/blogs'
 
 const reducer = combineReducers({
+  blogs: blogsReducer,
   notification: notificationReducer,
   login: loginReducer,
 })
@@ -20,10 +22,19 @@ const reducer = combineReducers({
 const listeningMiddleware = createListenerMiddleware()
 
 listeningMiddleware.startListening({
+  actionCreator: setUser,
+  effect: (action) => {
+    let user = action.payload
+    blogService.setToken(user.token)
+  },
+})
+
+listeningMiddleware.startListening({
   actionCreator: login.fulfilled,
   effect: (action, { dispatch }) => {
     let user = action.payload
     window.localStorage.setItem('user', JSON.stringify(user))
+    blogService.setToken(user.token)
     dispatch(notify(`Login success! Hello ${user.name}`))
   },
 })
@@ -40,18 +51,8 @@ listeningMiddleware.startListening({
   actionCreator: logout,
   effect: (_action, { dispatch }) => {
     window.localStorage.removeItem('user')
+    blogService.token = null
     dispatch(notify('Logout success!'))
-  },
-})
-
-// Inject user token into blogservice
-// TODO: is there a better way to handle this?
-listeningMiddleware.startListening({
-  actionCreator: setUser,
-  effect: (action, _listenerAPI) => {
-    let user = action.payload
-    let token = user.token
-    blogService.token = token
   },
 })
 
