@@ -10,7 +10,6 @@ import { setUser, login, logout, loginSelector } from './reducers/loginReducer'
 import {
   setBlogs as setBlogsAction,
   getBlogs,
-  submitBlog as submitBlogAction,
   deleteBlog as deleteBlogAction,
   blogsSelector,
 } from './reducers/blogsReducer'
@@ -71,11 +70,6 @@ const App = () => {
     return sortBy(blogs, (b) => -b.likes)
   })
 
-  const submitBlog = (blog) => {
-    console.log('submitting', blog)
-    dispatch(submitBlogAction(blog))
-  }
-
   const setBlogs = (blogs) => {
     dispatch(setBlogsAction(blogs))
   }
@@ -125,7 +119,6 @@ const App = () => {
         <BlogList
           username={user == null ? null : user.username}
           header={blogHeader}
-          submitBlog={submitBlog}
           blogs={blogs}
           likeBlog={likeBlog}
           deleteBlog={deleteBlog}

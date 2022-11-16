@@ -1,23 +1,18 @@
-import { useRef } from 'react'
 import PropTypes from 'prop-types'
+import sortBy from 'lodash.sortby'
 
-import Togglable from './Togglable'
-import Blog, { BlogType } from './Blog'
+import { useSelector } from 'react-redux'
+
+import Blog from './Blog'
 import BlogForm from './BlogForm'
 
-const BlogList = ({
-  username,
-  header,
-  blogs,
-  submitBlog,
-  likeBlog,
-  deleteBlog,
-}) => {
-  const formRef = useRef()
-  const submit = (...args) => {
-    formRef.current.toggleVisibility()
-    return submitBlog(...args)
-  }
+import { blogsSelector } from '../reducers/blogsReducer'
+
+const BlogList = ({ username, header, likeBlog, deleteBlog }) => {
+  const blogs = useSelector((state) => {
+    const blogs = blogsSelector(state)
+    return sortBy(blogs, (blog) => -blog.likes)
+  })
   return (
     <div>
       {header}
@@ -37,13 +32,7 @@ const BlogList = ({
           />
         ))}
       </div>
-      <Togglable
-        buttonLabel="create new blog"
-        ref={formRef}
-        style={{ border: 'solid', borderRadius: '15px', padding: '5px' }}
-      >
-        <BlogForm submitBlog={submit} />
-      </Togglable>
+      <BlogForm />
     </div>
   )
 }
@@ -51,8 +40,6 @@ const BlogList = ({
 BlogList.propTypes = {
   username: PropTypes.string,
   header: PropTypes.element,
-  blogs: PropTypes.arrayOf(BlogType).isRequired,
-  submitBlog: PropTypes.func.isRequired,
   likeBlog: PropTypes.func.isRequired,
   deleteBlog: PropTypes.func.isRequired,
 }
