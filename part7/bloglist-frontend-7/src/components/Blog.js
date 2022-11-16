@@ -1,5 +1,9 @@
 import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
+
+import { likeBlog, deleteBlog } from '../reducers/blogsReducer'
+import { loginSelector } from '../reducers/loginReducer'
 
 export const BlogType = PropTypes.exact({
   title: PropTypes.string.isRequired,
@@ -10,7 +14,8 @@ export const BlogType = PropTypes.exact({
   id: PropTypes.string.isRequired,
 })
 
-export const Blog = ({ blog, doLike, doDelete }) => {
+export const Blog = ({ blog }) => {
+  const dispatch = useDispatch()
   const [detailVisible, setDetailVisible] = useState(false)
   const blogstyle = {
     paddingLeft: 2,
@@ -27,12 +32,16 @@ export const Blog = ({ blog, doLike, doDelete }) => {
       {detailVisible ? 'hide' : 'show'}
     </button>
   )
+  const doLike = () => dispatch(likeBlog(blog.id))
+  const currentUser = useSelector(loginSelector)
+
   const deleteButton =
-    doDelete == null ? null : (
+    currentUser?.username !== blog.user.username ? null : (
       <p>
-        <button onClick={doDelete}> remove </button>
+        <button onClick={() => dispatch(deleteBlog(blog.id))}> remove </button>
       </p>
     )
+
   return (
     <div className="blogItem" style={blogstyle}>
       <p>
@@ -61,8 +70,6 @@ export const Blog = ({ blog, doLike, doDelete }) => {
 
 Blog.propTypes = {
   blog: BlogType,
-  doLike: PropTypes.func.isRequired,
-  doDelete: PropTypes.func,
 }
 
 export default Blog

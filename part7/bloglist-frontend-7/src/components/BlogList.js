@@ -8,7 +8,7 @@ import BlogForm from './BlogForm'
 
 import { blogsSelector } from '../reducers/blogsReducer'
 
-const BlogList = ({ username, header, likeBlog, deleteBlog }) => {
+const BlogList = ({ header }) => {
   const blogs = useSelector((state) => {
     const blogs = blogsSelector(state)
     return sortBy(blogs, (blog) => -blog.likes)
@@ -18,18 +18,7 @@ const BlogList = ({ username, header, likeBlog, deleteBlog }) => {
       {header}
       <div className="blogList">
         {blogs.map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            doLike={() => likeBlog(blog)}
-            doDelete={
-              username === blog.user.username
-                ? () => {
-                    deleteBlog(blog)
-                  }
-                : null
-            }
-          />
+          <Blog key={blog.id} blog={blog} />
         ))}
       </div>
       <BlogForm />
@@ -38,10 +27,7 @@ const BlogList = ({ username, header, likeBlog, deleteBlog }) => {
 }
 
 BlogList.propTypes = {
-  username: PropTypes.string,
   header: PropTypes.element,
-  likeBlog: PropTypes.func.isRequired,
-  deleteBlog: PropTypes.func.isRequired,
 }
 
 export default BlogList

@@ -20,6 +20,21 @@ export const deleteBlog = createAsyncThunk('blogs/deleteBlog', async (id) => {
   return id
 })
 
+export const likeBlog = createAsyncThunk(
+  'blogs/likeBlog',
+  async (blogId, { getState }) => {
+    const blog = blogsSelector(getState()).find(({ id }) => id === blogId)
+    if (blog == null) {
+      throw new Error('blog not found')
+    }
+    const newBlog = await blogsService.put(blog.id, {
+      ...blog,
+      likes: blog.likes + 1,
+    })
+    return newBlog
+  }
+)
+
 const blogsSlice = createSlice({
   name: 'blogs',
   initialState,
@@ -42,6 +57,14 @@ const blogsSlice = createSlice({
     })
     builder.addCase(getBlogs.fulfilled, (_state, action) => {
       return action.payload
+    })
+    builder.addCase(likeBlog.fulfilled, (state, action) => {
+      let newBlog = action.payload
+      // Note: newBlog.user is a userid,
+      // so we do not update everything here.
+      return state.map((blog) =>
+        newBlog.id !== blog.id ? blog : { ...blog, likes: newBlog.likes }
+      )
     })
   },
 })

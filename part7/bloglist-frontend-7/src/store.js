@@ -14,6 +14,7 @@ import blogsReducer, {
   submitBlog,
   deleteBlog,
   blogsSelector,
+  likeBlog,
 } from './reducers/blogsReducer'
 
 import blogService from './services/blogs'
@@ -86,6 +87,22 @@ listeningMiddleware.startListening({
       ({ id }) => id === deletedId
     )
     dispatch(notify(`Removed ${oldBlog.title}`))
+  },
+})
+
+listeningMiddleware.startListening({
+  actionCreator: deleteBlog.rejected,
+  effect: (action, { dispatch }) => {
+    const error = action.error
+    dispatch(notifyError(`Cannot remove blog: ${error.message}`))
+  },
+})
+
+listeningMiddleware.startListening({
+  actionCreator: likeBlog.rejected,
+  effect: (action, { dispatch }) => {
+    const error = action.error
+    dispatch(notifyError(`Cannot like blog: ${error.message}`))
   },
 })
 
