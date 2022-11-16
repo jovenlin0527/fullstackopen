@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import blogsService from '../services/blogs'
+import { tokenSelector } from './loginReducer'
 
 const initialState = []
 
@@ -10,24 +11,30 @@ export const getBlogs = createAsyncThunk('blogs/getBlogs', async () => {
 
 export const submitBlog = createAsyncThunk(
   'blogs/submitBlog',
-  async ({ title, author, url }) => {
-    return await blogsService.post({ title, author, url, likes: 0 })
+  async ({ title, author, url }, { getState }) => {
+    const token = tokenSelector(getState())
+    return await blogsService.post(token, { title, author, url, likes: 0 })
   }
 )
 
-export const deleteBlog = createAsyncThunk('blogs/deleteBlog', async (id) => {
-  await blogsService.deleteBlog(id)
-  return id
-})
+export const deleteBlog = createAsyncThunk(
+  'blogs/deleteBlog',
+  async (id, { getState }) => {
+    const token = tokenSelector(getState())
+    await blogsService.deleteBlog(token, id)
+    return id
+  }
+)
 
 export const likeBlog = createAsyncThunk(
   'blogs/likeBlog',
   async (blogId, { getState }) => {
+    const token = tokenSelector(getState())
     const blog = blogsSelector(getState()).find(({ id }) => id === blogId)
     if (blog == null) {
       throw new Error('blog not found')
     }
-    const newBlog = await blogsService.put(blog.id, {
+    const newBlog = await blogsService.put(token, {
       ...blog,
       likes: blog.likes + 1,
     })

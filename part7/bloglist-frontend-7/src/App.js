@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import BlogList from './components/BlogList'
 import TextField, { useField } from './components/TextField'
 import { NotificationCenter } from './components/Notification'
-import { setUser, login, logout, loginSelector } from './reducers/loginReducer'
+import { login, logout, loginSelector } from './reducers/loginReducer'
 import { getBlogs } from './reducers/blogsReducer'
 
 const LoginForm = () => {
@@ -43,13 +43,6 @@ const LoginForm = () => {
 
 const App = () => {
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    const user = JSON.parse(window.localStorage.getItem('user'))
-    if (user != null) {
-      dispatch(setUser(user))
-    }
-  }, [])
 
   useEffect(() => {
     dispatch(getBlogs())

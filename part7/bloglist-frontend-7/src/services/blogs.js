@@ -4,12 +4,7 @@ class BlogServiceError extends Error {}
 
 const baseUrl = '/api/blogs'
 
-let token = null
-const setToken = (newToken) => {
-  token = newToken
-}
-
-const requestConfig = () => ({
+const requestConfig = (token) => ({
   headers: {
     Authorization: 'bearer ' + token,
   },
@@ -37,10 +32,10 @@ const tryRequest = async (responsePromise) => {
   }
 }
 
-const post = async ({ title, author, url, likes }) => {
+const post = async (token, { title, author, url, likes }) => {
   likes = typeof likes === 'number' ? likes : 0
   const response = await tryRequest(
-    axios.post(baseUrl, { title, author, url, likes }, requestConfig())
+    axios.post(baseUrl, { title, author, url, likes }, requestConfig(token))
   )
   return response.data
 }
@@ -50,7 +45,8 @@ const getAll = () => {
   return request.then((response) => response.data)
 }
 
-const put = async (id, blog) => {
+const put = async (token, blog) => {
+  const blogId = blog.id
   const blogToPut = { ...blog }
   if (typeof blogToPut.user !== 'string') {
     if (typeof blogToPut.user !== 'object') {
@@ -66,13 +62,15 @@ const put = async (id, blog) => {
     blogToPut.user = id
   }
   const response = await tryRequest(
-    axios.put(baseUrl + `/${id}`, blogToPut, requestConfig())
+    axios.put(baseUrl + `/${blogId}`, blogToPut, requestConfig(token))
   )
   return response.data
 }
 
-const deleteBlog = async (id) => {
-  return await tryRequest(axios.delete(baseUrl + `/${id}`, requestConfig()))
+const deleteBlog = async (token, blogId) => {
+  return await tryRequest(
+    axios.delete(baseUrl + `/${blogId}`, requestConfig(token))
+  )
 }
 
-export default { getAll, post, put, setToken, BlogServiceError, deleteBlog }
+export default { getAll, post, put, BlogServiceError, deleteBlog }
