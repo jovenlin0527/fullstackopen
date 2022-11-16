@@ -1,82 +1,18 @@
-import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import BlogList from './components/BlogList'
-import TextField, { useField } from './components/TextField'
-import { NotificationCenter } from './components/Notification'
-import { login, logout, loginSelector } from './reducers/loginReducer'
-import { getBlogs } from './reducers/blogsReducer'
+import Root from './routes/Root'
+import Index from './routes/Index'
 
-const LoginForm = () => {
-  const dispatch = useDispatch()
-  const [username, setUsername] = useField()
-  const [password, setPassword] = useField({ type: 'password' })
-  const submit = (event) => {
-    event.preventDefault()
-    const { username, password } = event.target
-    dispatch(login({ username: username.value, password: password.value }))
-    setUsername('')
-    setPassword('')
-  }
-  return (
-    <div>
-      <h2>log in to application</h2>
-      <form className="loginForm" onSubmit={submit}>
-        <TextField
-          id="username"
-          name="username"
-          prompt="username: "
-          {...username}
-        />
-        <TextField
-          id="password"
-          name="password"
-          prompt="pasword: "
-          type="password"
-          {...password}
-        />
-        <input type="submit" />
-      </form>
-    </div>
-  )
-}
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Root />,
+    children: [{ index: true, element: <Index /> }],
+  },
+])
 
 const App = () => {
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(getBlogs())
-  }, [])
-
-  const user = useSelector(loginSelector)
-
-  const handleLogout = () => {
-    dispatch(logout())
-  }
-
-  const blogHeader = user && (
-    <div>
-      <h2>blogs</h2>
-      <p>
-        {user.name} logged in <button onClick={handleLogout}> Logout</button>
-      </p>
-    </div>
-  )
-
-  return (
-    <div>
-      <NotificationCenter />
-      <div hidden={user != null}>
-        <LoginForm />
-      </div>
-      <div hidden={user == null}>
-        <BlogList
-          username={user == null ? null : user.username}
-          header={blogHeader}
-        />
-      </div>
-    </div>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
