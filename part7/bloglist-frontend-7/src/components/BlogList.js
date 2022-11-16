@@ -1,18 +1,19 @@
+import { useSelector } from 'react-redux'
+import { createSelector } from '@reduxjs/toolkit'
 import PropTypes from 'prop-types'
 import sortBy from 'lodash.sortby'
-
-import { useSelector } from 'react-redux'
 
 import Blog from './Blog'
 import BlogForm from './BlogForm'
 
 import { blogsSelector } from '../reducers/blogsReducer'
 
+const selectBlogsSorted = createSelector(blogsSelector, (blogs) =>
+  sortBy(blogs, (blog) => -blog.likes)
+)
+
 const BlogList = ({ header }) => {
-  const blogs = useSelector((state) => {
-    const blogs = blogsSelector(state)
-    return sortBy(blogs, (blog) => -blog.likes)
-  })
+  const blogs = useSelector(selectBlogsSorted)
   return (
     <div>
       {header}
