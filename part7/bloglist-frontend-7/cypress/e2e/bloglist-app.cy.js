@@ -1,37 +1,41 @@
-describe('Blog app', function () {
-  const user = {
-    username: 'username',
-    name: 'name',
-    password: 'password',
-  }
+const sampleUser = {
+  username: 'username',
+  name: 'name',
+  password: 'password',
+}
 
-  const blog = {
-    title: 'blogTitle',
-    author: 'blogAuthor',
-    url: 'blogUrl',
-  }
+const sampleBlog = {
+  title: 'blogTitle',
+  author: 'blogAuthor',
+  url: 'blogUrl',
+}
 
+beforeEach(function () {
+  cy.request('POST', 'http://localhost:3003/api/testing/reset')
+})
+
+describe('test index page', function () {
   const extractLikes = (elem) => {
     const digits = elem.text().match(/(\d+)/)[1]
     return parseInt(digits)
   }
 
   beforeEach(function () {
-    cy.request('POST', 'http://localhost:3003/api/testing/reset')
-    cy.createUser(user)
+    cy.createUser(sampleUser)
     cy.intercept('GET', 'http://localhost:3000/api/blogs').as('loadBlogs')
     cy.visit('http://localhost:3000')
     cy.wait('@loadBlogs')
   })
 
-  it('Login is shown', function () {
-    cy.get('.loginForm').should('be.visible').parent().contains('log in')
-  })
-
   describe('Login', function () {
+
+    it('Login is shown', function () {
+      cy.get('.loginForm').should('be.visible').parent().contains('log in')
+    })
+
     it('succeeds with correct credentials', function () {
-      cy.get('#username').type(user.username)
-      cy.get('#password').type(user.password)
+      cy.get('#username').type(sampleUser.username)
+      cy.get('#password').type(sampleUser.password)
       cy.get(".loginForm input[type='submit']").click()
       cy.get('[data-testid="notificationItem"]').contains('Login success')
       cy.get('.loginForm').should('not.be.visible')
@@ -44,8 +48,8 @@ describe('Blog app', function () {
         let userData = window.localStorage.getItem('user')
         expect(userData).to.be.a('string')
         userData = JSON.parse(userData)
-        expect(userData.name).to.be.equal(user.name)
-        expect(userData.username).to.be.equal(user.username)
+        expect(userData.name).to.be.equal(sampleUser.name)
+        expect(userData.username).to.be.equal(sampleUser.username)
         expect(userData.token).to.be.a('string')
       })
 
@@ -61,8 +65,8 @@ describe('Blog app', function () {
     })
 
     it('fails with wrong credentials', function () {
-      cy.get('#username').type(user.username)
-      cy.get('#password').type(user.password + 'abc')
+      cy.get('#username').type(sampleUser.username)
+      cy.get('#password').type(sampleUser.password + 'abc')
       cy.get(".loginForm input[type='submit']").click()
       cy.get('[data-testid="notificationItem"]')
         .contains('Cannot login')
@@ -76,7 +80,7 @@ describe('Blog app', function () {
 
   describe('When logged in', function () {
     beforeEach(function () {
-      cy.login(user)
+      cy.login(sampleUser)
       cy.wait('@loadBlogs')
     })
 
@@ -84,21 +88,21 @@ describe('Blog app', function () {
       cy.contains('blog')
       cy.get('.blogForm').should('not.be.visible')
       cy.contains('create new blog').click()
-      cy.get('.blogForm #title').type(blog.title)
-      cy.get('.blogForm #author').type(blog.author)
-      cy.get('.blogForm #url').type(blog.url)
+      cy.get('.blogForm #title').type(sampleBlog.title)
+      cy.get('.blogForm #author').type(sampleBlog.author)
+      cy.get('.blogForm #url').type(sampleBlog.url)
       cy.get(".blogForm input[type='submit']").click()
 
       cy.get('[data-testid="notificationItem"]').within(() => {
-        cy.contains(blog.title)
-        cy.contains(blog.author)
+        cy.contains(sampleBlog.title)
+        cy.contains(sampleBlog.author)
       })
 
-      cy.get(`.blogItem:contains(${blog.title})`)
+      cy.get(`.blogItem:contains(${sampleBlog.title})`)
         .as('blogItem')
         .within(() => {
-          cy.contains(blog.title)
-          cy.contains(blog.author)
+          cy.contains(sampleBlog.title)
+          cy.contains(sampleBlog.author)
           cy.get('.blogItemDetail').should('not.be.visible')
           cy.contains('show').click()
           cy.get('.blogItemDetail').should('be.visible')
@@ -109,17 +113,17 @@ describe('Blog app', function () {
 
       cy.reload()
       cy.wait('@loadBlogs')
-      cy.get('@blogItem').contains(blog.title).contains(blog.author)
+      cy.get('@blogItem').contains(sampleBlog.title).contains(sampleBlog.author)
     })
 
     it('Can like a blog', function () {
-      cy.createBlog(blog)
+      cy.createBlog(sampleBlog)
       cy.reload()
       cy.wait('@loadBlogs')
-      let oldLikes = blog.likes == null ? 0 : blog.likes
+      let oldLikes = sampleBlog.likes == null ? 0 : sampleBlog.likes
 
       // need to show details in order to like a blog
-      cy.get(`.blogItem:contains('${blog.title}')`)
+      cy.get(`.blogItem:contains('${sampleBlog.title}')`)
         .as('blogItem')
         .within(() => {
           cy.contains(/likes.*\d+/).should('not.be.visible')
@@ -156,8 +160,8 @@ describe('Blog app', function () {
 
   describe('Delete a blog', function () {
     beforeEach(() => {
-      cy.login(user)
-      cy.createBlog(blog)
+      cy.login(sampleUser)
+      cy.createBlog(sampleBlog)
       cy.wait('@loadBlogs')
     })
 
@@ -166,21 +170,21 @@ describe('Blog app', function () {
         method: 'DELETE',
         url: 'http://localhost:3000/api/blogs/**',
       }).as('deleteBlog')
-      cy.get(`.blogItem:contains('${blog.title}')`)
+      cy.get(`.blogItem:contains('${sampleBlog.title}')`)
         .as('blogItem')
         .within(() => {
           cy.contains('remove').should('not.be.visible')
           cy.contains('show').click()
           cy.on('window:confirm', (text) => {
             expect(text).to.have.string('Remove')
-            expect(text).to.have.string(blog.title)
-            expect(text).to.have.string(blog.author)
+            expect(text).to.have.string(sampleBlog.title)
+            expect(text).to.have.string(sampleBlog.author)
           })
           cy.contains('remove').click()
         })
       cy.wait('@deleteBlog')
       cy.get('[data-testid="notificationItem"]').contains(
-        new RegExp(`Removed.*${blog.title}`)
+        new RegExp(`Removed.*${sampleBlog.title}`)
       )
       cy.get('@blogItem').should('not.exist')
       cy.reload()
@@ -200,7 +204,7 @@ describe('Blog app', function () {
       cy.createUser(newUser)
       cy.login(newUser)
       cy.wait('@loadBlogs')
-      cy.get(`.blogItem:contains('${blog.title}')`).within(() => {
+      cy.get(`.blogItem:contains('${sampleBlog.title}')`).within(() => {
         cy.contains('remove').should('not.exist')
         cy.contains('show').click()
         cy.contains('remove').should('not.exist')
@@ -209,13 +213,13 @@ describe('Blog app', function () {
   })
 
   it('blog is sorted by likes', function () {
-    cy.login(user)
+    cy.login(sampleUser)
     const blogNums = 5
     const blogs = new Array(blogNums)
     for (let i = 0; i < 5; i++) {
       const newBlog = {
-        ...blog,
-        title: blog.title + i.toString(),
+        ...sampleBlog,
+        title: sampleBlog.title + i.toString(),
         likes: i * i,
       }
       blogs[i] = newBlog
@@ -237,5 +241,19 @@ describe('Blog app', function () {
         (val, idx) => idx + 1 === likes.length || val < likes[idx + 1]
       )
     )
+  })
+})
+
+describe.only('test user view', function () {
+  beforeEach(function () {
+    cy.createUser(sampleUser)
+    cy.intercept('GET', 'http://localhost:3000/api/users').as('loadUsers')
+    cy.visit('http://localhost:3000/users')
+    cy.wait('@loadUsers')
+  })
+
+  it('nice display', function() {
+    cy.contains('Users')
+    cy.contains(sampleUser.name)
   })
 })
