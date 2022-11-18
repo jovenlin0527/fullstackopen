@@ -244,16 +244,39 @@ describe('test index page', function () {
   })
 })
 
-describe.only('test user view', function () {
+describe('test user view', function () {
+  const anotherSampleBlog = {
+    title: 'anotherBlog',
+    author: 'anotherAuthor',
+    url: 'anotherUrl',
+  }
+
+  const userWithNoBlog = {
+      username: 'foo',
+      name: 'Foo Bar',
+      password: 'cool'
+  }
+
   beforeEach(function () {
     cy.createUser(sampleUser)
+    cy.createUser(userWithNoBlog)
+    cy.login(sampleUser)
+    cy.createBlog(sampleBlog)
+    cy.createBlog(anotherSampleBlog)
     cy.intercept('GET', 'http://localhost:3000/api/users').as('loadUsers')
     cy.visit('http://localhost:3000/users')
     cy.wait('@loadUsers')
   })
 
-  it('nice display', function() {
-    cy.contains('Users')
-    cy.contains(sampleUser.name)
+  it('Lists all users and blog count', function() {
+    cy.contains('Users') // page title
+
+    cy.get('table tr')
+      .within(() => {
+        cy.contains('th', sampleUser.name)
+          .siblings().contains('2')
+        cy.contains('th', userWithNoBlog.name)
+          .siblings().contains('0')
+      })
   })
 })
