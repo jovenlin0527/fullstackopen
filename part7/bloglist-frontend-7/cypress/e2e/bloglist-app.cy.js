@@ -93,14 +93,14 @@ describe('test index page', function () {
       cy.get('.blogForm #url').type(sampleBlog.url)
       cy.get(".blogForm input[type='submit']").click()
 
-      cy.get('[data-testid="notificationItem"]').within(() => {
+      cy.get('[data-testid="notificationItem"]').within(function () {
         cy.contains(sampleBlog.title)
         cy.contains(sampleBlog.author)
       })
 
       cy.get(`.blogItem:contains(${sampleBlog.title})`)
         .as('blogItem')
-        .within(() => {
+        .within(function () {
           cy.contains(sampleBlog.title)
           cy.contains(sampleBlog.author)
           cy.get('.blogItemDetail').should('not.be.visible')
@@ -125,7 +125,7 @@ describe('test index page', function () {
       // need to show details in order to like a blog
       cy.get(`.blogItem:contains('${sampleBlog.title}')`)
         .as('blogItem')
-        .within(() => {
+        .within(function () {
           cy.contains(/likes.*\d+/).should('not.be.visible')
           cy.get('button.likeBlog').should('not.be.visible')
           cy.contains('show').click()
@@ -172,7 +172,7 @@ describe('test index page', function () {
       }).as('deleteBlog')
       cy.get(`.blogItem:contains('${sampleBlog.title}')`)
         .as('blogItem')
-        .within(() => {
+        .within(function () {
           cy.contains('remove').should('not.be.visible')
           cy.contains('show').click()
           cy.on('window:confirm', (text) => {
@@ -204,7 +204,7 @@ describe('test index page', function () {
       cy.createUser(newUser)
       cy.login(newUser)
       cy.wait('@loadBlogs')
-      cy.get(`.blogItem:contains('${sampleBlog.title}')`).within(() => {
+      cy.get(`.blogItem:contains('${sampleBlog.title}')`).within(function () {
         cy.contains('remove').should('not.exist')
         cy.contains('show').click()
         cy.contains('remove').should('not.exist')
@@ -272,7 +272,7 @@ describe('test user view', function () {
     cy.contains('Users') // page title
 
     cy.get('table tr')
-      .within(() => {
+      .within(function () {
         cy.contains('th', sampleUser.name)
           .siblings().contains('2')
         cy.contains('th', userWithNoBlog.name)
