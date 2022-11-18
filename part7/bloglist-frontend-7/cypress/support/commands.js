@@ -34,8 +34,8 @@ Cypress.Commands.add('login', ({ username, password }) => {
     password,
   }).then(({ body }) => {
     localStorage.setItem('user', JSON.stringify(body))
-    cy.visit('http://localhost:3000')
   })
+  cy.reload()
 })
 
 Cypress.Commands.add('createBlog', (blog) => {
