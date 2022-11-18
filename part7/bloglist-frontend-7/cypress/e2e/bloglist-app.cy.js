@@ -1,3 +1,8 @@
+const extractNumber = (elem) => {
+  const digits = elem.text().match(/(\d+)/)[1]
+  return parseInt(digits)
+}
+
 const sampleUser = {
   username: 'username',
   name: 'name',
@@ -15,10 +20,6 @@ beforeEach(function () {
 })
 
 describe('test index page', function () {
-  const extractLikes = (elem) => {
-    const digits = elem.text().match(/(\d+)/)[1]
-    return parseInt(digits)
-  }
 
   beforeEach(function () {
     cy.createUser(sampleUser)
@@ -133,7 +134,7 @@ describe('test index page', function () {
         })
 
       cy.get('@blogItem')
-        .then(extractLikes)
+        .then(extractNumber)
         .should((likes) => expect(likes).to.equal(oldLikes))
 
       // Trying to click the button
@@ -146,14 +147,14 @@ describe('test index page', function () {
 
       // likes is increased
       cy.get('@blogItem')
-        .then(extractLikes)
+        .then(extractNumber)
         .should((likes) => expect(likes).to.equal(oldLikes + 1))
 
       cy.reload()
       cy.wait('@loadBlogs')
       cy.get('@blogItem').contains('show').click()
       cy.get('@blogItem')
-        .then(extractLikes)
+        .then(extractNumber)
         .should((likes) => expect(likes).to.equal(oldLikes + 1))
     })
   })
@@ -214,33 +215,30 @@ describe('test index page', function () {
 
   it('blog is sorted by likes', function () {
     cy.login(sampleUser)
-    const blogNums = 5
-    const blogs = new Array(blogNums)
+    const likes = [9, 5, 6, 1, 13]
     for (let i = 0; i < 5; i++) {
       const newBlog = {
         ...sampleBlog,
         title: sampleBlog.title + i.toString(),
-        likes: i * i,
+        likes: likes[i],
       }
-      blogs[i] = newBlog
       cy.createBlog(newBlog)
     }
-    blogs.sort((x, y) => y.likes - x.likes)
     cy.wait('@loadBlogs')
     cy.reload()
     cy.wait('@loadBlogs')
-    const likes = new Array(5)
+    let oldLike = Infinity
     cy.get('.blogItem')
       .as('blogList')
-      .each((val, idx) => {
-        expect(val).to.contain(blogs[idx].title)
+      .each((elem) => {
+        cy.wrap(elem)
+          .contains(/[Ll]ikes/)
+          .then((likeElem) => {
+            const like = extractNumber(likeElem)
+            expect(like).be.most(oldLike)
+            oldLike = like
+          })
       })
-    console.log(likes)
-    expect(
-      likes.every(
-        (val, idx) => idx + 1 === likes.length || val < likes[idx + 1]
-      )
-    )
   })
 })
 
