@@ -264,4 +264,38 @@ describe('test user view', function () {
           .siblings().contains('0')
       })
   })
+
+  it('Click the user to see the details', function () {
+    cy.contains('a', sampleUser.name)
+      .click()
+
+    cy.contains(sampleBlog.title)
+    cy.contains(anotherSampleBlog.title)
+  })
+
+  it('Click the user changes the url via client side routing', function () {
+    cy.url().as('oldUrl')
+
+    // https://stackoverflow.com/a/67720310
+    cy.window().then((win) => { win.shouldNotReload = true })
+    cy.contains('a', sampleUser.name)
+      .click()
+    cy.window().should('have.prop', 'shouldNotReload')
+
+    cy.url().then((url) => {
+      cy.get('@oldUrl').then((oldUrl) => {
+        expect(url).not.eq(oldUrl)
+      })
+    })
+  })
+
+  it('reloading on a user detail page still displays the detail', function () {
+    cy.contains('a', sampleUser.name)
+      .click()
+    cy.url().as('oldUrl')
+    cy.get('@oldUrl').then(cy.visit)
+
+    cy.contains(sampleBlog.title)
+    cy.contains(anotherSampleBlog.title)
+  })
 })
