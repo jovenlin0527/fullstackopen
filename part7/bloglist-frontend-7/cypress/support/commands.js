@@ -44,6 +44,7 @@ Cypress.Commands.add('createBlog', (blog) => {
     throw new Error('You need to login in order to create a blog!')
   }
   const { token } = JSON.parse(userInfo)
+  let newBlog
   cy.request({
     url: 'http://localhost:3003/api/blogs',
     method: 'POST',
@@ -51,5 +52,6 @@ Cypress.Commands.add('createBlog', (blog) => {
       bearer: token,
     },
     body: blog,
-  })
+  }).then(({ body }) => (newBlog = body))
+  return newBlog
 })

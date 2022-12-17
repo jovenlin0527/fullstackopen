@@ -1,23 +1,19 @@
-import { useSelector } from 'react-redux'
-import { createSelector } from '@reduxjs/toolkit'
+import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import sortBy from 'lodash.sortby'
 
-import Blog from './Blog'
 import BlogForm from './BlogForm'
+import { BlogType } from './PropTypes'
 
-import { blogsSelector } from '../reducers/blogsReducer'
-
-const selectBlogsSorted = createSelector(blogsSelector, (blogs) =>
-  sortBy(blogs, (blog) => -blog.likes)
-)
-
-const BlogList = () => {
-  const blogs = useSelector(selectBlogsSorted)
+const BlogList = ({ blogs }) => {
+  const sortedBlogs = sortBy(blogs, (blog) => -blog.likes)
   return (
     <div>
       <div className="blogList">
-        {blogs.map((blog) => (
-          <Blog key={blog.id} blog={blog} />
+        {sortedBlogs.map((blog) => (
+          <p key={blog.id} data-testid="blogItem">
+            <Link to={`/blogs/${blog.id}`}> {blog.title} </Link>
+          </p>
         ))}
       </div>
       <BlogForm />
@@ -25,6 +21,8 @@ const BlogList = () => {
   )
 }
 
-BlogList.propTypes = {}
+BlogList.propTypes = {
+  blogs: PropTypes.arrayOf(BlogType),
+}
 
 export default BlogList

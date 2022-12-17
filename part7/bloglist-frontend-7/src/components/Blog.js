@@ -1,22 +1,12 @@
-import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom'
 
+import { BlogType } from './PropTypes'
 import { likeBlog, deleteBlog } from '../reducers/blogsReducer'
 import { loginSelector } from '../reducers/loginReducer'
 
-export const BlogType = PropTypes.exact({
-  title: PropTypes.string.isRequired,
-  author: PropTypes.string.isRequired,
-  url: PropTypes.string.isRequired,
-  likes: PropTypes.number.isRequired,
-  user: PropTypes.object.isRequired,
-  id: PropTypes.string.isRequired,
-})
-
 export const Blog = ({ blog }) => {
   const dispatch = useDispatch()
-  const [detailVisible, setDetailVisible] = useState(false)
   const blogstyle = {
     paddingLeft: 2,
     border: 'solid',
@@ -24,35 +14,31 @@ export const Blog = ({ blog }) => {
     borderWidth: 1,
     marginBottom: '5px',
   }
+  const navigate = useNavigate()
 
-  const doToggleDetail = () => setDetailVisible(!detailVisible)
-
-  const toggleDetail = (
-    <button className="toggleBlogDetail" onClick={doToggleDetail}>
-      {detailVisible ? 'hide' : 'show'}
-    </button>
-  )
   const doLike = () => dispatch(likeBlog(blog.id))
+  const doDelete = async () => {
+    await dispatch(deleteBlog(blog.id)).unwrap()
+    navigate('/')
+  }
   const currentUser = useSelector(loginSelector)
 
   const deleteButton =
     currentUser?.username !== blog.user.username ? null : (
       <p>
-        <button onClick={() => dispatch(deleteBlog(blog.id))}> remove </button>
+        <button onClick={() => doDelete()}> remove </button>
       </p>
     )
 
   return (
     <div className="blogItem" style={blogstyle}>
-      <p>
-        {' '}
-        {blog.title} {blog.author} {toggleDetail}
-      </p>
-      <div
-        className="blogItemDetail"
-        style={{ display: detailVisible ? '' : 'none' }}
-      >
-        <p> {blog.url} </p>
+      <h2> {blog.title} </h2>
+      <p>author: {blog.author}</p>
+      <div className="blogItemDetail">
+        <p>
+          {' '}
+          url: <a href={blog.url}>{blog.url}</a>{' '}
+        </p>
         <p>
           {' '}
           likes: {blog.likes}{' '}
@@ -61,7 +47,7 @@ export const Blog = ({ blog }) => {
             like{' '}
           </button>{' '}
         </p>
-        <p> {blog.user.name} </p>
+        <p> added by: {blog.user.name} </p>
         {deleteButton}
       </div>
     </div>
@@ -69,7 +55,7 @@ export const Blog = ({ blog }) => {
 }
 
 Blog.propTypes = {
-  blog: BlogType,
+  blog: BlogType.isRequired,
 }
 
 export default Blog

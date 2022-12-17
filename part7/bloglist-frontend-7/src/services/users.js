@@ -8,5 +8,5 @@ export const getAll = async () => {
 }
 
 export default {
-  getAll
+  getAll,
 }

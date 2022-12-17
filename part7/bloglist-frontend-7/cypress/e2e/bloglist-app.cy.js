@@ -13,6 +13,7 @@ const sampleBlog = {
   title: 'blogTitle',
   author: 'blogAuthor',
   url: 'blogUrl',
+  likes: 0,
 }
 
 beforeEach(function () {
@@ -75,14 +76,15 @@ describe('Login test', function () {
       'not.exist'
     )
   })
-
 })
 
 describe('test index page', function () {
-
   beforeEach(function () {
     cy.login(sampleUser)
-    cy.createBlog(sampleBlog)
+    cy.createBlog(sampleBlog).then(({ id: blogId }) => {
+      expect(blogId).not.be.null
+      cy.wrap(blogId).as('blogId')
+    })
     cy.visit('http://localhost:3000')
     cy.wait('@loadBlogs')
   })
@@ -106,38 +108,100 @@ describe('test index page', function () {
       cy.contains(newBlog.author)
     })
 
-    cy.get(`.blogItem:contains(${newBlog.title})`)
-      .as('blogItem')
-      .within(function () {
-        cy.contains(newBlog.title)
-        cy.contains(newBlog.author)
-        cy.get('.blogItemDetail').should('not.be.visible')
-        cy.contains('show').click()
-        cy.get('.blogItemDetail').should('be.visible')
-      })
+    cy.contains(newBlog.title)
     cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
       'not.exist'
     )
 
     cy.reload()
     cy.wait('@loadBlogs')
-    cy.get('@blogItem').contains(newBlog.title).contains(newBlog.author)
+    cy.contains(newBlog.title)
+  })
+
+  describe('Click a blog to see the details', function () {
+    it('Clicking a blog shows the detail', function () {
+      cy.contains(sampleBlog.title).should('be.visible').click()
+
+      cy.contains(sampleBlog.title)
+      cy.contains(sampleBlog.url)
+      cy.contains(sampleBlog.author)
+      cy.contains('likes').contains(sampleBlog.likes)
+      cy.contains('added').contains(sampleUser.name)
+    })
+
+    it('Clicking a book leads to the details page via client side routing', function () {
+      cy.url().as('oldUrl')
+      cy.window().then((win) => (win.shouldNotReload = true))
+
+      cy.contains(sampleBlog.title).click()
+
+      cy.url().then((newUrl) => {
+        cy.get('@blogId').then((blogId) => expect(newUrl).contains(blogId))
+        cy.get('@oldUrl').then((oldUrl) => expect(oldUrl).not.eq(newUrl))
+      })
+
+      cy.window().should('have.prop', 'shouldNotReload')
+    })
+  })
+
+  it('blog is sorted by likes', function () {
+    const likes = [9, 5, 6, 1, 13]
+    const blogs = [sampleBlog]
+    for (let i = 0; i < 5; i++) {
+      const newBlog = {
+        ...sampleBlog,
+        title: sampleBlog.title + i.toString(),
+        likes: likes[i],
+      }
+      blogs.push(newBlog)
+      cy.createBlog(newBlog)
+    }
+    cy.reload()
+    cy.wait('@loadBlogs')
+
+    let oldLikes = Infinity
+    cy.get('[data-testid="blogItem"]')
+      .as('blogList')
+      .each((elem) => {
+        cy.wrap(elem)
+          .contains(/blogTitle(\d*)/)
+          .then((component) => {
+            const text = component[0].textContent
+            const title = text.match(/blogTitle\d*/)[0]
+            const b = blogs.find((b) => b.title === title)
+            const likes = b.likes
+            expect(likes).lte(oldLikes)
+            oldLikes = likes
+          })
+      })
+  })
+})
+
+describe('On blog details', function () {
+  beforeEach(function () {
+    cy.login(sampleUser)
+    cy.createBlog(sampleBlog).then(({ id: blogId }) => {
+      expect(blogId).not.be.null
+      cy.wrap(blogId).as('blogId')
+      cy.visit(`http://localhost:3000/blogs/${blogId}`)
+      cy.wait('@loadBlogs')
+    })
+  })
+
+  it('Shows the detail', function () {
+    // intentinally duplicated with 'Click a blog to see the details',
+    // because this one tests the content of a specific url.
+    cy.contains(sampleBlog.title)
+    cy.contains(sampleBlog.url)
+    cy.contains(sampleBlog.author)
+    cy.contains('likes').contains(sampleBlog.likes)
+    cy.contains('added').contains(sampleUser.name)
   })
 
   it('Can like a blog', function () {
-    let oldLikes = sampleBlog.likes == null ? 0 : sampleBlog.likes
+    let oldLikes = sampleBlog.likes
 
-    // need to show details in order to like a blog
-    cy.get(`.blogItem:contains('${sampleBlog.title}')`)
-      .as('blogItem')
-      .within(function () {
-        cy.contains(/likes.*\d+/).should('not.be.visible')
-        cy.get('button.likeBlog').should('not.be.visible')
-        cy.contains('show').click()
-        cy.get('button.likeBlog').should('be.visible')
-      })
-
-    cy.get('@blogItem')
+    cy.contains('likes')
       .then(extractNumber)
       .should((likes) => expect(likes).to.equal(oldLikes))
 
@@ -146,47 +210,73 @@ describe('test index page', function () {
       method: 'PUT',
       url: 'http://localhost:3000/api/blogs/**',
     }).as('updateBlog')
-    cy.get('@blogItem').get('button.likeBlog').contains('like').click()
+    cy.get('button.likeBlog').contains('like').click()
     cy.wait('@updateBlog')
 
     // likes is increased
-    cy.get('@blogItem')
+    cy.contains('likes')
       .then(extractNumber)
       .should((likes) => expect(likes).to.equal(oldLikes + 1))
   })
 
   describe('Delete a blog', function () {
-    it('succeeds if you are the owner', function () {
-      cy.intercept({
-        method: 'DELETE',
-        url: 'http://localhost:3000/api/blogs/**',
-      }).as('deleteBlog')
-      cy.get(`.blogItem:contains('${sampleBlog.title}')`)
-        .as('blogItem')
-        .within(function () {
-          cy.contains('remove').should('not.be.visible')
-          cy.contains('show').click()
-          cy.on('window:confirm', (text) => {
-            expect(text).to.have.string('Remove')
-            expect(text).to.have.string(sampleBlog.title)
-            expect(text).to.have.string(sampleBlog.author)
-          })
-          cy.contains('remove').click()
+    describe('as the owner', function () {
+      beforeEach(function () {
+        cy.intercept({
+          method: 'DELETE',
+          url: 'http://localhost:3000/api/blogs/**',
+        }).as('deleteBlog')
+
+        // prepare for testing client-side routing
+        cy.url().as('blogViewUrl')
+        cy.window().then((win) => (win.shouldNotReload = true))
+
+        cy.on('window:confirm', (text) => {
+          expect(text).to.have.string('Remove')
+          expect(text).to.have.string(sampleBlog.title)
+          expect(text).to.have.string(sampleBlog.author)
         })
-      cy.wait('@deleteBlog')
-      cy.get('[data-testid="notificationItem"]').contains(
-        new RegExp(`Removed.*${sampleBlog.title}`)
-      )
-      cy.get('@blogItem').should('not.exist')
-      cy.reload()
-      cy.wait('@loadBlogs')
-      cy.get('@blogItem').should('not.exist')
-      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
-        'not.exist'
-      )
+        cy.contains('remove').click()
+
+        cy.wait('@deleteBlog')
+      })
+
+      it('succeeds', function () {
+        cy.get('@blogViewUrl').then((url) => {
+          const blogId = url.match(/\/([0-9a-f]+)$/)[1]
+          cy.wrap(blogId).as('blogId')
+        })
+        cy.get('@blogId').then((blogId) => {
+          cy.request({
+            url: `http://localhost:3000/api/blogs/${blogId}`,
+            failOnStatusCode: false,
+          })
+            .its('status')
+            .should('equal', 404)
+        })
+      })
+
+      it('redirects to the homepage', function () {
+        // client side routing succeeds
+        cy.url().should('be.equal', 'http://localhost:3000/')
+        cy.window().should('have.prop', 'shouldNotReload')
+        // Wait for notification to disappear
+        // This is required because the title also appears in the notification
+        cy.contains(sampleBlog.title, { timeout: 10000 }).should('not.exist')
+      })
+
+      it('shows notification', function () {
+        cy.get('[data-testid="notificationItem"]')
+          .as('notification')
+          .contains(new RegExp(`Removed.*${sampleBlog.title}`))
+          .should('be.visible')
+
+        // wait for notification to disappear
+        cy.get('@notification', { timeout: 10000 }).should('not.exist')
+      })
     })
 
-    it('fails if you are not the owner', function () {
+    it('Do not show "remove" button if you are not the owner', function () {
       const newUser = {
         username: 'anotherUser',
         name: 'anotherName',
@@ -198,36 +288,8 @@ describe('test index page', function () {
       cy.wait('@loadBlogs')
       cy.get(`.blogItem:contains('${sampleBlog.title}')`).within(function () {
         cy.contains('remove').should('not.exist')
-        cy.contains('show').click()
-        cy.contains('remove').should('not.exist')
       })
     })
-  })
-
-  it('blog is sorted by likes', function () {
-    const likes = [9, 5, 6, 1, 13]
-    for (let i = 0; i < 5; i++) {
-      const newBlog = {
-        ...sampleBlog,
-        title: sampleBlog.title + i.toString(),
-        likes: likes[i],
-      }
-      cy.createBlog(newBlog)
-    }
-    cy.reload()
-    cy.wait('@loadBlogs')
-    let oldLike = Infinity
-    cy.get('.blogItem')
-      .as('blogList')
-      .each((elem) => {
-        cy.wrap(elem)
-          .contains(/[Ll]ikes/)
-          .then((likeElem) => {
-            const like = extractNumber(likeElem)
-            expect(like).be.most(oldLike)
-            oldLike = like
-          })
-      })
   })
 })
 
@@ -239,9 +301,9 @@ describe('test user view', function () {
   }
 
   const userWithNoBlog = {
-      username: 'foo',
-      name: 'Foo Bar',
-      password: 'cool'
+    username: 'foo',
+    name: 'Foo Bar',
+    password: 'cool',
   }
 
   beforeEach(function () {
@@ -253,21 +315,17 @@ describe('test user view', function () {
     cy.wait('@loadUsers')
   })
 
-  it('Lists all users and blog count', function() {
+  it('Lists all users and blog count', function () {
     cy.contains('Users') // page title
 
-    cy.get('table tr')
-      .within(function () {
-        cy.contains('th', sampleUser.name)
-          .siblings().contains('2')
-        cy.contains('th', userWithNoBlog.name)
-          .siblings().contains('0')
-      })
+    cy.get('table tr').within(function () {
+      cy.contains('th', sampleUser.name).siblings().contains('2')
+      cy.contains('th', userWithNoBlog.name).siblings().contains('0')
+    })
   })
 
   it('Click the user to see the details', function () {
-    cy.contains('a', sampleUser.name)
-      .click()
+    cy.contains('a', sampleUser.name).click()
 
     cy.contains(sampleBlog.title)
     cy.contains(anotherSampleBlog.title)
@@ -277,9 +335,10 @@ describe('test user view', function () {
     cy.url().as('oldUrl')
 
     // https://stackoverflow.com/a/67720310
-    cy.window().then((win) => { win.shouldNotReload = true })
-    cy.contains('a', sampleUser.name)
-      .click()
+    cy.window().then((win) => {
+      win.shouldNotReload = true
+    })
+    cy.contains('a', sampleUser.name).click()
     cy.window().should('have.prop', 'shouldNotReload')
 
     cy.url().then((url) => {
@@ -290,8 +349,7 @@ describe('test user view', function () {
   })
 
   it('reloading on a user detail page still displays the detail', function () {
-    cy.contains('a', sampleUser.name)
-      .click()
+    cy.contains('a', sampleUser.name).click()
     cy.url().as('oldUrl')
     cy.get('@oldUrl').then(cy.visit)
 

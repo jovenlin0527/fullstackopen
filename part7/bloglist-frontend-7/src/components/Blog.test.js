@@ -27,7 +27,7 @@ describe('display test', () => {
     blogComponent.queryLikes = () => blogComponent.queryByText(/likes.*238/)
   })
 
-  test('Shows only title and author by default', () => {
+  test('Shows informations', () => {
     const title = blogComponent.queryTitle()
     expect(title).not.toBeNull()
     expect(title).toBeVisible()
@@ -37,25 +37,10 @@ describe('display test', () => {
 
     const url = blogComponent.queryUrl()
     expect(url).not.toBeNull()
-    expect(url).not.toBeVisible()
+    expect(url).toBeVisible()
     const likes = blogComponent.queryLikes()
     expect(likes).not.toBeNull()
-    expect(likes).not.toBeVisible()
-  })
-
-  test('Shows url and likes after clicking for details', async () => {
-    const user = userEvent.setup()
-    const { container } = blogComponent
-    let toggleDetail = container.querySelector('.toggleBlogDetail')
-    await user.click(toggleDetail)
-    const url = blogComponent.queryUrl()
-    const likes = blogComponent.queryLikes()
-    expect(url).toBeVisible()
     expect(likes).toBeVisible()
-    toggleDetail = container.querySelector('.toggleBlogDetail')
-    await user.click(toggleDetail)
-    expect(url).not.toBeVisible()
-    expect(likes).not.toBeVisible()
   })
 
   // TODO: Somehow the mock doesn't work...
