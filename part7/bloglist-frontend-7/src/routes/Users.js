@@ -1,8 +1,7 @@
-import { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router-dom'
 
-import { usersSelector, getUsers } from '../reducers/usersReducer'
+import { usersSelector } from '../reducers/usersReducer'
 
 import UserDetail from '../components/UserDetail'
 
@@ -32,10 +31,6 @@ const UsersList = ({ users }) => {
 }
 
 const Users = () => {
-  const dispatch = useDispatch()
-  useEffect(() => {
-    dispatch(getUsers())
-  }, [])
   const users = useSelector(usersSelector)
   const { userId } = useParams()
   if (users == null) {

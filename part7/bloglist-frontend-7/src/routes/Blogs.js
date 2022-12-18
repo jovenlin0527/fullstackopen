@@ -5,7 +5,6 @@ import { blogsSelector } from '../reducers/blogsReducer'
 import BlogDisplay from '../components/Blog'
 
 const Blogs = () => {
-  // TODO: <Root /> fetches bloglist for us, might want to fix that later.
   const { blogId } = useParams()
   const blogs = useSelector(blogsSelector)
   if (blogs == null) {
