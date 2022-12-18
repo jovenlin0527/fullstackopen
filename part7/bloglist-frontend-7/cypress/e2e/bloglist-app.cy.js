@@ -23,6 +23,44 @@ beforeEach(function () {
   cy.intercept('GET', 'http://localhost:3000/api/users').as('loadUsers')
 })
 
+describe('Navigation bar', function () {
+  it('exists on various pages', function () {
+    function assertNavigationBarExists() {
+      cy.get('[data-testid="navigationBar"]')
+    }
+    cy.visit('http://localhost:3000')
+    assertNavigationBarExists()
+    cy.visit('http://localhost:3000/users')
+    assertNavigationBarExists()
+  })
+
+  describe('its content', function () {
+    beforeEach(function() {
+      cy.visit('http://localhost:3000')
+    })
+
+    it('has links to bloglist and users', function () {
+      cy.get('[data-testid="navigationBar"]')
+        .get('a')
+        .within(() => {
+          cy.contains('blogs').then((result) => {
+            expect(result.length).to.be.equal(1)
+            expect(result[0].href).to.be.equal('http://localhost:3000/')
+          })
+          cy.contains('users').then((result) => {
+            expect(result.length).to.be.equal(1)
+            expect(result[0].href).to.be.equal('http://localhost:3000/users')
+          })
+        })
+    })
+
+    it('contains login from', function () {
+      cy.get('[data-testid="navigationBar"]')
+        .get('[data-testid="loginForm"]')
+    })
+  })
+})
+
 describe('Login test', function () {
   beforeEach(function () {
     cy.visit('http://localhost:3000')
