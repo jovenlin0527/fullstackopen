@@ -5,7 +5,7 @@ const extractNumber = (elem) => {
 
 const sampleUser = {
   username: 'username',
-  name: 'name',
+  name: 'John Doe',
   password: 'password',
 }
 
@@ -35,7 +35,7 @@ describe('Navigation bar', function () {
   })
 
   describe('its content', function () {
-    beforeEach(function() {
+    beforeEach(function () {
       cy.visit('http://localhost:3000')
     })
 
@@ -55,64 +55,108 @@ describe('Navigation bar', function () {
     })
 
     it('contains login from', function () {
-      cy.get('[data-testid="navigationBar"]')
-        .get('[data-testid="loginForm"]')
+      cy.get('[data-testid="navigationBar"]').get('[data-testid="loginForm"]')
     })
   })
 })
 
 describe('Login test', function () {
   beforeEach(function () {
+    cy.intercept('POST', 'http://localhost:3000/api/login').as('loginRequest')
     cy.visit('http://localhost:3000')
     cy.wait('@loadBlogs')
   })
 
   it('Login is shown', function () {
-    cy.get('.loginForm').should('be.visible').parent().contains('log in')
+    cy.get('[data-testid="loginForm"]')
+      .should('be.visible')
+      .get('form')
+      .within(() => {
+        cy.get('#username')
+        cy.get('#password')
+        cy.get('input[type="submit"]')
+      })
   })
 
-  it('succeeds with correct credentials', function () {
-    cy.get('#username').type(sampleUser.username)
-    cy.get('#password').type(sampleUser.password)
-    cy.get(".loginForm input[type='submit']").click()
-    cy.get('[data-testid="notificationItem"]').contains('Login success')
-    cy.get('.loginForm').should('not.be.visible')
-    cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
-      'not.exist'
-    )
-
-    cy.contains('blogs') // title
-    cy.window().then((window) => {
-      let userData = window.localStorage.getItem('user')
-      expect(userData).to.be.a('string')
-      userData = JSON.parse(userData)
-      expect(userData.name).to.be.equal(sampleUser.name)
-      expect(userData.username).to.be.equal(sampleUser.username)
-      expect(userData.token).to.be.a('string')
+  describe('if succeeds', function () {
+    beforeEach(function () {
+      cy.get('[data-testid="loginForm"]').within(() => {
+        cy.get('#username').type(sampleUser.username)
+        cy.get('#password').type(sampleUser.password)
+        cy.get("input[type='submit']").click()
+        cy.wait('@loginRequest')
+      })
     })
 
-    cy.reload()
-    cy.contains('blogs')
+    it('responds with HTTP200', function () {
+      cy.get('@loginRequest').its('response.statusCode').should('be.equal', 200)
+    })
 
-    // logout
-    cy.contains('Logout').click()
-    cy.get('.loginForm').should('be.visible')
+    it('sends notification', function () {
+      cy.get('[data-testid="notificationItem"]').contains('Login success')
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
+    })
 
-    cy.reload()
-    cy.get('.loginForm').should('be.visible')
+    it('updates local storage', function () {
+      cy.window().then((window) => {
+        let userData = window.localStorage.getItem('user')
+        expect(userData).to.be.a('string')
+        userData = JSON.parse(userData)
+        expect(userData.name).to.be.equal(sampleUser.name)
+        expect(userData.username).to.be.equal(sampleUser.username)
+        expect(userData.token).to.be.a('string')
+      })
+    })
+
+    it('login form is replaced', function () {
+      cy.get('[data-testid="loginForm"]').should('not.exist')
+      // the status line
+      cy.contains('logged in').contains(sampleUser.name)
+      cy.contains('Logout')
+    })
+
+    describe('logging out', function () {
+      beforeEach(function () {
+        cy.contains('Logout').click()
+      })
+
+      it('shows login form again', function () {
+        cy.get('[data-testid="loginForm"]')
+      })
+
+      it('local storage is cleared', function () {
+        cy.window().then((window) => {
+          let userData = window.localStorage.getItem('user')
+          expect(userData).to.be.null
+        })
+      })
+    })
   })
 
-  it('fails with wrong credentials', function () {
-    cy.get('#username').type(sampleUser.username)
-    cy.get('#password').type(sampleUser.password + 'abc')
-    cy.get(".loginForm input[type='submit']").click()
-    cy.get('[data-testid="notificationItem"]')
-      .contains('Cannot login')
-      .should('have.css', 'color', 'rgb(255, 0, 0)')
-    cy.get('.loginForm').should('be.visible')
-    cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
-      'not.exist'
-    )
+  describe('fails with wrong credentials', function () {
+    beforeEach(function () {
+      cy.get('[data-testid="loginForm"]').within(() => {
+        cy.get('#username').type(sampleUser.username)
+        cy.get('#password').type(sampleUser.password + 'abc')
+        cy.get("input[type='submit']").click()
+      })
+    })
+
+    it('notifies the user that login failed', function () {
+      cy.get('[data-testid="notificationItem"]')
+        .contains('Cannot login')
+        .should('have.css', 'color', 'rgb(255, 0, 0)')
+
+      cy.get('[data-testid="notificationItem"]', { timeout: 10000 }).should(
+        'not.exist'
+      )
+    })
+
+    it('still shows the login form', function () {
+      cy.get('[data-testid="loginForm"]').should('be.visible')
+    })
   })
 })
 
