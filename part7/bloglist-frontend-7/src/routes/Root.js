@@ -4,7 +4,8 @@ import { Outlet } from 'react-router-dom'
 
 import { loginSelector } from '../reducers/loginReducer'
 import { getBlogs } from '../reducers/blogsReducer'
-import Header from '../components/Header'
+import NavigationBar from '../components/NavigationBar'
+import { NotificationCenter } from '../components/Notification'
 
 const Root = () => {
   const dispatch = useDispatch()
@@ -17,7 +18,8 @@ const Root = () => {
 
   return (
     <div>
-      <Header />
+      <NavigationBar />
+      <NotificationCenter />
       <div hidden={user == null}>
         <Outlet />
       </div>
